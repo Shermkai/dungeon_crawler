@@ -52,12 +52,20 @@ class Popup:
         self._pos = (self._popup_x_coord - self._popup_width / 2, self._popup_y_coord - self._popup_height / 2)
         self._popup_rect = pygame.Rect(self._pos, (self._popup_width, self._popup_height))
 
+        # Create buttons
+        self._deny_button = Button((width / 3, height / 1.5), (width / 3.5, height / 7),
+                                   (255, 115, 115), int(height * .1), 'black', "No")
+        self._confirm_button = Button((width * .67, height / 1.5), (width / 3.5, height / 7),
+                                      (125, 255, 115), int(height * .1), 'black', "Yes")
+
     def draw(self):
+        """Draws and displays the popup"""
         pygame.draw.rect(screen, (90, 90, 90), self._popup_rect)
+        self._confirm_button.draw(pygame.mouse.get_pos())
+        self._deny_button.draw(pygame.mouse.get_pos())
         screen.blit(self._text, self._text_rect)
 
-    @staticmethod
-    def routine():
+    def routine(self):
         """Displays and handles interactions with the popup that appears when attempting to exit the game. Returns True
         or False depending on whether the confirmation was accepted."""
 
@@ -66,17 +74,15 @@ class Popup:
 
         while is_popup_showing:
             for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-
-                    # TODO: Remove these in favor of buttons
-                    if event.key == pygame.K_DELETE:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self._confirm_button.check_press(event.pos):
                         was_game_closed = True
                         is_popup_showing = False
 
-                    elif event.key == pygame.K_END:
+                    elif self._deny_button.check_press(event.pos):
                         is_popup_showing = False
 
-            closure_popup.draw()
+            self.draw()
             pygame.display.flip()
 
         screen.fill((0, 0, 0))  # Clear the screen
