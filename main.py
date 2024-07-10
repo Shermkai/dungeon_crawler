@@ -9,8 +9,8 @@ class Button:
         self._text_rect = self._text.get_rect(center=position)
 
         # Set up the button rectangle
-        self._pos = (position[0] - size[0] / 2, position[1] - size[1] / 2)  # Offset pos by half button size to center
-        self._button_rect = pygame.Rect(self._pos, size)
+        self._button_rect = pygame.Rect(position, size)
+        self._button_rect.center = position
 
         # Set up the button's color
         self._color = button_color
@@ -37,20 +37,19 @@ class Button:
 class Popup:
     def __init__(self):
         # Set up popup dimensions
+        self._pos = (width / 2, height / 2)
         self._popup_width = width / 1.5
         self._popup_height = height / 1.5
-        self._popup_x_coord = width / 2
-        self._popup_y_coord = height / 2
 
         # Set up popup text
-        font = pygame.font.SysFont('arial', 85)
+        font = pygame.font.SysFont('arial', int(height * .08))
         self._text = font.render("Are you sure you want to close the game? You will lose all your progress.",
                                  True, 'white', wraplength=int(self._popup_width / 1.1))
         self._text_rect = self._text.get_rect(center=(width / 2, height / 3))
 
         # Set up popup rectangle
-        self._pos = (self._popup_x_coord - self._popup_width / 2, self._popup_y_coord - self._popup_height / 2)
         self._popup_rect = pygame.Rect(self._pos, (self._popup_width, self._popup_height))
+        self._popup_rect.center = self._pos
 
         # Create buttons
         self._deny_button = Button((width / 3, height / 1.5), (width / 3.5, height / 7),
@@ -60,9 +59,15 @@ class Popup:
 
     def draw(self):
         """Draws and displays the popup"""
+
+        # Draw rectangle and white outline
         pygame.draw.rect(screen, (90, 90, 90), self._popup_rect)
+        pygame.draw.rect(screen, 'white', self._popup_rect, 5, border_radius=1)
+
+        # Draw buttons
         self._confirm_button.draw(pygame.mouse.get_pos())
         self._deny_button.draw(pygame.mouse.get_pos())
+
         screen.blit(self._text, self._text_rect)
 
     def routine(self):
@@ -101,20 +106,46 @@ closure_popup = Popup()
 def game_loop():
     """The core game loop"""
 
-    # Display a white screen with red text
-    screen.fill((255, 255, 255))
-    font = pygame.font.SysFont('arial', 50)
+    screen.fill('black')
+
+    rect_width = width * .95
+    rect_height = height * .57
+    rect_pos = (width / 2, height / 3)
+    rect = pygame.Rect(rect_pos, (rect_width, rect_height))
+    rect.center = rect_pos
+    pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
+
+    # Create text
+    font = pygame.font.SysFont('arial', int(height * .045))
     text = font.render("This text should be long enough to get wrapped into a new line thanks to the wraplength "
-                       "argument. Also Hello World!", True, 'red', wraplength=400)
-    text_rect = text.get_rect(center=(width / 2, height / 2))
+                       "argument. Also Hello World!", True, 'white', wraplength=int(rect_width * .985))
+    text_rect = text.get_rect(center=rect_pos)
+    screen.blit(text, text_rect)  # Text displayed outside loop because it doesn't change
+
+    # Create buttons
+    close_button = Button((width / 2, height - height / 6), (width / 3.5, height / 7),
+                          (255, 115, 115), int(height * .1), 'black', "Close Game")
+
     is_game_running = True
 
     while is_game_running:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if close_button.check_press(event.pos):
+                    is_game_running = not closure_popup.routine()
+
+                    # Re-display the text and rectangle if the game wasn't closed
+                    if is_game_running:
+                        screen.blit(text, text_rect)
+                        pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
+
+            elif event.type == pygame.QUIT:
                 is_game_running = False
 
-        screen.blit(text, text_rect)
+        # Without this if statement, closing the game will flash the buttons
+        if is_game_running:
+            close_button.draw(pygame.mouse.get_pos())
+
         pygame.display.flip()
 
 
@@ -151,10 +182,10 @@ def main_menu():
                 elif close_button.check_press(event.pos):
                     is_menu_running = not closure_popup.routine()
 
-                    # Without this if statement, closing the game will flash the title/subtitle
+                    # Re-display title and subtitle if the game wasn't closed
                     if is_menu_running:
-                        screen.blit(title_text, title_rect)        # Re-display title after screen clear
-                        screen.blit(subtitle_text, subtitle_rect)  # Re-display subtitle after screen clear
+                        screen.blit(title_text, title_rect)
+                        screen.blit(subtitle_text, subtitle_rect)
 
             elif event.type == pygame.QUIT:
                 is_menu_running = False
