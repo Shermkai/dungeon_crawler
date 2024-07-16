@@ -134,14 +134,19 @@ def game_loop():
     pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
 
     # Request and receive text data from room_generator.py microservice
-    socket.send_string("Request Data")
-    message = socket.recv().decode()
+    socket.send_string("0")
+    message_part_01 = socket.recv().decode()
+    socket.send_string("1")
+    message_part_02 = socket.recv().decode()
 
     # Create text
-    font = pygame.font.SysFont('arial', int(height * .045))
-    text = font.render(message, True, 'white', wraplength=int(rect_width * .985))
-    text_rect = text.get_rect(center=rect_pos)
-    screen.blit(text, text_rect)  # Text displayed outside loop because it doesn't change
+    font = pygame.font.SysFont('arial', int(height * .075))
+    text_01 = font.render(message_part_01, True, 'white', wraplength=int(rect_width * .975))
+    text_02 = font.render(message_part_02, True, 'red', wraplength=int(rect_width * .975))
+    text_rect_01 = text_01.get_rect(topleft=rect.topleft)
+    text_rect_02 = text_02.get_rect(bottomleft=rect.bottomleft)
+    screen.blit(text_01, text_rect_01)  # Text displayed outside loop because it doesn't change
+    screen.blit(text_02, text_rect_02)  # Text displayed outside loop because it doesn't change
 
     # Create buttons
     close_button = Button((width / 2, height - height / 6), (width / 3.5, height / 7),
@@ -157,7 +162,8 @@ def game_loop():
 
                     # Re-display the text and rectangle if the game wasn't closed
                     if is_game_running:
-                        screen.blit(text, text_rect)
+                        screen.blit(text_01, text_rect_01)
+                        screen.blit(text_02, text_rect_02)
                         pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
 
             elif event.type == pygame.QUIT:
