@@ -143,8 +143,8 @@ def game_loop():
     font = pygame.font.SysFont('arial', int(height * .075))
     text_01 = font.render(message_part_01, True, 'white', wraplength=int(rect_width * .975))
     text_02 = font.render(message_part_02, True, 'red', wraplength=int(rect_width * .975))
-    text_rect_01 = text_01.get_rect(topleft=rect.topleft)
-    text_rect_02 = text_02.get_rect(bottomleft=rect.bottomleft)
+    text_rect_01 = text_01.get_rect(topleft=(rect.topleft[0] + 20, rect.topleft[1] + 20))
+    text_rect_02 = text_02.get_rect(bottomleft=(rect.bottomleft[0] + 20, rect.bottomleft[1] - 20))
     screen.blit(text_01, text_rect_01)  # Text displayed outside loop because it doesn't change
     screen.blit(text_02, text_rect_02)  # Text displayed outside loop because it doesn't change
 
