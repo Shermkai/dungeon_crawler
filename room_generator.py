@@ -35,4 +35,5 @@ while True:
         print("[RG] Returning data to client...")
         socket.send_string(generate_room())
 
+print("[RG] Closed room_generator.py")
 context.destroy()
