@@ -1,4 +1,6 @@
 import pygame
+import zmq
+import subprocess
 
 
 class Button:
@@ -197,6 +199,17 @@ def main_menu():
 
         pygame.display.flip()
 
+
+# Run microservices in background
+subprocess.Popen(["python", "room_generator.py"])
+
+# Set up ZeroMQ to communicate between files
+context = zmq.Context()           # Set up environment to create sockets
+socket = context.socket(zmq.REQ)  # Create request socket
+socket.connect("tcp://localhost:5555")
+socket.send_string("Request")
+message = socket.recv()
+print(f"Server returned: {message.decode()}")
 
 main_menu()
 pygame.quit()
