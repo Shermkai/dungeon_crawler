@@ -97,6 +97,9 @@ class Popup:
         return was_game_closed
 
 
+# Run microservices in background
+subprocess.Popen(["python", "room_generator.py"])
+
 # Global constants
 pygame.init()
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -104,12 +107,18 @@ height = screen.get_height()
 width = screen.get_width()
 closure_popup = Popup()
 
+# Set up ZeroMQ to communicate between files
+context = zmq.Context()           # Set up environment to create sockets
+socket = context.socket(zmq.REQ)  # Create request socket
+socket.connect("tcp://localhost:5555")
+
 
 def game_loop():
     """The core game loop"""
 
     screen.fill('black')
 
+    # Create text display area
     rect_width = width * .95
     rect_height = height * .57
     rect_pos = (width / 2, height / 3)
@@ -200,13 +209,6 @@ def main_menu():
         pygame.display.flip()
 
 
-# Run microservices in background
-subprocess.Popen(["python", "room_generator.py"])
-
-# Set up ZeroMQ to communicate between files
-context = zmq.Context()           # Set up environment to create sockets
-socket = context.socket(zmq.REQ)  # Create request socket
-socket.connect("tcp://localhost:5555")
 socket.send_string("Request")
 message = socket.recv()
 print(f"Server returned: {message.decode()}")
