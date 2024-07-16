@@ -113,6 +113,13 @@ socket = context.socket(zmq.REQ)  # Create request socket
 socket.connect("tcp://localhost:5555")
 
 
+def kill_microservices():
+    """Sends a request to each of the microservices to end their execution.
+    This is needed to avoid any errors from files not properly closing."""
+
+    socket.send_string("Q")
+
+
 def game_loop():
     """The core game loop"""
 
@@ -126,10 +133,13 @@ def game_loop():
     rect.center = rect_pos
     pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
 
+    # Receive text data from room_generator.py microservice
+    socket.send_string("Request Data")
+    message = socket.recv().decode()
+
     # Create text
     font = pygame.font.SysFont('arial', int(height * .045))
-    text = font.render("This text should be long enough to get wrapped into a new line thanks to the wraplength "
-                       "argument. Also Hello World!", True, 'white', wraplength=int(rect_width * .985))
+    text = font.render(message, True, 'white', wraplength=int(rect_width * .985))
     text_rect = text.get_rect(center=rect_pos)
     screen.blit(text, text_rect)  # Text displayed outside loop because it doesn't change
 
@@ -209,10 +219,7 @@ def main_menu():
         pygame.display.flip()
 
 
-socket.send_string("Request")
-message = socket.recv()
-print(f"Server returned: {message.decode()}")
-
 main_menu()
+kill_microservices()
 pygame.quit()
 quit()
