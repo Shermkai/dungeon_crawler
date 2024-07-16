@@ -133,7 +133,7 @@ def game_loop():
     rect.center = rect_pos
     pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
 
-    # Receive text data from room_generator.py microservice
+    # Request and receive text data from room_generator.py microservice
     socket.send_string("Request Data")
     message = socket.recv().decode()
 

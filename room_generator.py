@@ -1,4 +1,20 @@
 import zmq
+import random
+
+
+def generate_room():
+    """Generates a description for the current room."""
+
+    adjectives = ['dark', 'smelly', 'mossy', 'overgrown']
+    items = ['key', 'sword', 'torch', 'bone']
+    monsters = ['slime']
+
+    description = ("You enter a " + random.choice(adjectives) + " and " + random.choice(adjectives) +
+                   " room. Inside, there appears to be a " + random.choice(items) + " and a " +
+                   random.choice(monsters) + ". There is a door in the back. What do you do...?")
+
+    return str(description)
+
 
 print("[RG] Initialized room_generator.py")
 
@@ -17,6 +33,6 @@ while True:
             break
 
         print("[RG] Returning data to client...")
-        socket.send_string("Hello World!")
+        socket.send_string(generate_room())
 
 context.destroy()
