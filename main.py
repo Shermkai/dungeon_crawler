@@ -75,8 +75,8 @@ class Popup:
         screen.blit(self._text, self._text_rect)
 
     def routine(self):
-        """Displays and handles interactions with the popup that appears when attempting to exit the game. Returns True
-        or False depending on whether the confirmation was accepted."""
+        """Displays and handles interactions with the popup that appears when attempting to exit the game.
+        Returns True or False depending on whether the confirmation was accepted."""
 
         is_popup_showing = True
         was_game_closed = False  # Whether the popup was confirmed or if the user returned to the game
@@ -122,6 +122,33 @@ def kill_microservices():
     socket.send_string("Q")
 
 
+def draw_game_loop(new_text_01, new_text_02, new_text_rect_01, new_text_rect_02, new_rect):
+    """Redraws game loop elements that may have been cleared"""
+
+    screen.blit(new_text_01, new_text_rect_01)
+    screen.blit(new_text_02, new_text_rect_02)
+    pygame.draw.rect(screen, 'white', new_rect, 5, border_radius=1)
+
+
+def generate_text(new_font, new_rect, new_rect_width, message_part_01="", message_part_02=""):
+    """Generates new displayable text for the game loop"""
+
+    # Request and receive text data from room_generator.py microservice if default variables were not overridden
+    if message_part_01 == "":
+        socket.send_string("0")
+        message_part_01 = socket.recv().decode()
+        socket.send_string("1")
+        message_part_02 = socket.recv().decode()
+
+    # Prepare the text and text rectangles to display in outer scope
+    new_text_01 = new_font.render(message_part_01, True, 'white', wraplength=int(new_rect_width * .975))
+    new_text_02 = new_font.render(message_part_02, True, 'yellow', wraplength=int(new_rect_width * .975))
+    new_text_rect_01 = new_text_01.get_rect(topleft=(new_rect.topleft[0] + 20, new_rect.topleft[1] + 20))
+    new_text_rect_02 = new_text_02.get_rect(bottomleft=(new_rect.bottomleft[0] + 20, new_rect.bottomleft[1] - 20))
+
+    return new_text_01, new_text_02, new_text_rect_01, new_text_rect_02, message_part_01, message_part_02
+
+
 def game_loop():
     """The core game loop"""
 
@@ -133,26 +160,18 @@ def game_loop():
     rect_pos = (width / 2, height / 3)
     rect = pygame.Rect(rect_pos, (rect_width, rect_height))
     rect.center = rect_pos
-    pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
-
-    # Request and receive text data from room_generator.py microservice
-    socket.send_string("0")
-    message_part_01 = socket.recv().decode()
-    socket.send_string("1")
-    message_part_02 = socket.recv().decode()
 
     # Create text
     font = pygame.font.SysFont('arial', int(height * .075))
-    text_01 = font.render(message_part_01, True, 'white', wraplength=int(rect_width * .975))
-    text_02 = font.render(message_part_02, True, 'yellow', wraplength=int(rect_width * .975))
-    text_rect_01 = text_01.get_rect(topleft=(rect.topleft[0] + 20, rect.topleft[1] + 20))
-    text_rect_02 = text_02.get_rect(bottomleft=(rect.bottomleft[0] + 20, rect.bottomleft[1] - 20))
-    screen.blit(text_01, text_rect_01)  # Text displayed outside loop because it doesn't change
-    screen.blit(text_02, text_rect_02)  # Text displayed outside loop because it doesn't change
+    text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font, rect, rect_width)
+
+    draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
 
     # Create buttons
     back_button = Button((width / 8, height - height / 20), (width / 7, width / 7),
                          (110, 110, 110), int(height * .1), 'black', "Back", True)
+    next_button = Button((width * 0.875, height - height / 20), (width / 7, width / 7),
+                         (125, 255, 115), int(height * .1), 'black', "Next", True)
     close_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
                           (255, 115, 115), int(height * .1), 'black', "Exit Dungeon", True)
 
@@ -160,24 +179,41 @@ def game_loop():
     # Can be either 'BACK' or 'CLOSE'
     return_state = ''
 
+    prev_msg_part_01 = ""  # Used to store the first half of the description for use in going back
+    prev_msg_part_02 = ""  # Used to store the second half of the description for use in going back
+    room_counter = 1       # The number of rooms that have been traversed. 0 indicates the first room
     is_game_running = True
 
     while is_game_running:
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if back_button.check_press(event.pos):
-                    is_game_running = False
-                    return_state = 'BACK'  # If the back button was pressed, end the loop and indicate such
+                    room_counter -= 1
                     screen.fill('black')   # Clear the screen so the previous page appears properly
+                    if room_counter <= 0:  # If this is the first room, go back to the main menu
+                        is_game_running = False
+                        return_state = 'BACK'
+                    else:                  # If this is not the first room, go back to the previous room
+                        text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font, rect,
+                                                                                                     rect_width,
+                                                                                                     prev_msg_part_01,
+                                                                                                     prev_msg_part_02)
+                        draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
+
+                elif next_button.check_press(event.pos):
+                    room_counter += 1
+                    screen.fill('black')       # Clear the screen so the previous page appears properly
+                    prev_msg_part_01 = msg_01  # Store this room's description part 1 in case we return to this room
+                    prev_msg_part_02 = msg_02  # Store this room's description part 2 in case we return to this room
+                    text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font, rect, rect_width)
+                    draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
 
                 elif close_button.check_press(event.pos):
                     is_game_running = not closure_popup.routine()
 
                     # Re-display the text and rectangle if the game wasn't closed
                     if is_game_running:
-                        screen.blit(text_01, text_rect_01)
-                        screen.blit(text_02, text_rect_02)
-                        pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
+                        draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
                     else:  # If the game was closed, indicate such
                         return_state = 'CLOSE'
 
@@ -186,8 +222,9 @@ def game_loop():
 
         # Without this if statement, closing the game will flash the buttons
         if is_game_running:
-            close_button.draw(pygame.mouse.get_pos())
             back_button.draw(pygame.mouse.get_pos())
+            next_button.draw(pygame.mouse.get_pos())
+            close_button.draw(pygame.mouse.get_pos())
 
         pygame.display.flip()
 
