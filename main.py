@@ -34,6 +34,7 @@ class Button:
     def check_press(self, position):
         """Returns True or False depending on whether the button is being hovered over. Used for clicks."""
         if self._button_rect.collidepoint(position):
+            pygame.mixer.Sound.play(click_sound)
             return True
         return False
 
@@ -108,6 +109,7 @@ screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 height = screen.get_height()
 width = screen.get_width()
 closure_popup = Popup()
+click_sound = pygame.mixer.Sound("click.wav")
 
 # Set up ZeroMQ to communicate between files
 context = zmq.Context()  # Set up environment to create sockets
