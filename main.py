@@ -4,15 +4,17 @@ import subprocess
 
 
 class Button:
-    def __init__(self, position, size, button_color, text_size, text_color, text):
-        # Set up button text
-        font = pygame.font.SysFont('arial', text_size)
-        self._text = font.render(text, True, text_color)
-        self._text_rect = self._text.get_rect(center=position)
-
+    def __init__(self, position, size, button_color, text_size, text_color, text, bottom_anchor=False):
         # Set up the button rectangle
         self._button_rect = pygame.Rect(position, size)
         self._button_rect.center = position
+        if bottom_anchor:
+            self._button_rect.midbottom = position
+
+        # Set up button text
+        font = pygame.font.SysFont('arial', text_size)
+        self._text = font.render(text, True, text_color)
+        self._text_rect = self._text.get_rect(center=self._button_rect.center)
 
         # Set up the button's color
         self._color = button_color
@@ -92,7 +94,7 @@ class Popup:
             self.draw()
             pygame.display.flip()
 
-        screen.fill((0, 0, 0))  # Clear the screen
+        screen.fill('black')  # Clear the screen
         pygame.display.flip()
         return was_game_closed
 
@@ -108,7 +110,7 @@ width = screen.get_width()
 closure_popup = Popup()
 
 # Set up ZeroMQ to communicate between files
-context = zmq.Context()           # Set up environment to create sockets
+context = zmq.Context()  # Set up environment to create sockets
 socket = context.socket(zmq.REQ)  # Create request socket
 socket.connect("tcp://localhost:5555")
 
@@ -142,22 +144,33 @@ def game_loop():
     # Create text
     font = pygame.font.SysFont('arial', int(height * .075))
     text_01 = font.render(message_part_01, True, 'white', wraplength=int(rect_width * .975))
-    text_02 = font.render(message_part_02, True, 'red', wraplength=int(rect_width * .975))
+    text_02 = font.render(message_part_02, True, 'yellow', wraplength=int(rect_width * .975))
     text_rect_01 = text_01.get_rect(topleft=(rect.topleft[0] + 20, rect.topleft[1] + 20))
     text_rect_02 = text_02.get_rect(bottomleft=(rect.bottomleft[0] + 20, rect.bottomleft[1] - 20))
     screen.blit(text_01, text_rect_01)  # Text displayed outside loop because it doesn't change
     screen.blit(text_02, text_rect_02)  # Text displayed outside loop because it doesn't change
 
     # Create buttons
-    close_button = Button((width / 2, height - height / 6), (width / 3.5, height / 7),
-                          (255, 115, 115), int(height * .1), 'black', "Close Game")
+    back_button = Button((width / 8, height - height / 20), (width / 7, width / 7),
+                         (110, 110, 110), int(height * .1), 'black', "Back", True)
+    close_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
+                          (255, 115, 115), int(height * .1), 'black', "Exit Dungeon", True)
+
+    # Indicates if the game loop was exited via going back or closing the game.
+    # Can be either 'BACK' or 'CLOSE'
+    return_state = ''
 
     is_game_running = True
 
     while is_game_running:
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if close_button.check_press(event.pos):
+                if back_button.check_press(event.pos):
+                    is_game_running = False
+                    return_state = 'BACK'  # If the back button was pressed, end the loop and indicate such
+                    screen.fill('black')   # Clear the screen so the previous page appears properly
+
+                elif close_button.check_press(event.pos):
                     is_game_running = not closure_popup.routine()
 
                     # Re-display the text and rectangle if the game wasn't closed
@@ -165,6 +178,8 @@ def game_loop():
                         screen.blit(text_01, text_rect_01)
                         screen.blit(text_02, text_rect_02)
                         pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
+                    else:  # If the game was closed, indicate such
+                        return_state = 'CLOSE'
 
             elif event.type == pygame.QUIT:
                 is_game_running = False
@@ -172,8 +187,11 @@ def game_loop():
         # Without this if statement, closing the game will flash the buttons
         if is_game_running:
             close_button.draw(pygame.mouse.get_pos())
+            back_button.draw(pygame.mouse.get_pos())
 
         pygame.display.flip()
+
+    return return_state
 
 
 def main_menu():
@@ -203,16 +221,20 @@ def main_menu():
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if start_button.check_press(event.pos):
-                    game_loop()
-                    is_menu_running = False
+                    game_state = game_loop()
+
+                    # Only close the game entirely if indicated by the game loop.
+                    # Otherwise, we just keep running the menu.
+                    if game_state == 'CLOSE':
+                        is_menu_running = False
 
                 elif close_button.check_press(event.pos):
                     is_menu_running = not closure_popup.routine()
 
-                    # Re-display title and subtitle if the game wasn't closed
-                    if is_menu_running:
-                        screen.blit(title_text, title_rect)
-                        screen.blit(subtitle_text, subtitle_rect)
+                # Re-display title and subtitle if the game wasn't closed
+                if is_menu_running:
+                    screen.blit(title_text, title_rect)
+                    screen.blit(subtitle_text, subtitle_rect)
 
             elif event.type == pygame.QUIT:
                 is_menu_running = False
