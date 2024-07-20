@@ -133,13 +133,13 @@ def draw_game_loop(new_text_01, new_text_02, new_text_rect_01, new_text_rect_02,
 
 
 def generate_text(new_font, new_rect, new_rect_width, message_part_01="", message_part_02=""):
-    """Generates new displayable text for the game loop"""
+    """Generates new displayable text for the game loop and returns all its components"""
 
     # Request and receive text data from room_generator.py microservice if default variables were not overridden
     if message_part_01 == "":
-        socket.send_string("0")
+        socket.send_string("RM1")
         message_part_01 = socket.recv().decode()
-        socket.send_string("1")
+        socket.send_string("RM2")
         message_part_02 = socket.recv().decode()
 
     # Prepare the text and text rectangles to display in outer scope
@@ -181,6 +181,8 @@ def game_loop():
     # Can be either 'BACK' or 'CLOSE'
     return_state = ''
 
+    socket.send_string("ITEM")
+    curr_room_item = socket.recv().decode()
     prev_msg_part_01 = ""  # Used to store the first half of the description for use in going back
     prev_msg_part_02 = ""  # Used to store the second half of the description for use in going back
     room_counter = 1       # The number of rooms that have been traversed. 0 indicates the first room
