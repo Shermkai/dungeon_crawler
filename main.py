@@ -13,7 +13,7 @@ class Button:
 
         # Set up button text
         font = pygame.font.SysFont('arial', text_size)
-        self._text = font.render(text, True, text_color)
+        self._text = font.render(text, True, text_color, wraplength=int(size[0] * 0.975))
         self._text_rect = self._text.get_rect(center=self._button_rect.center)
 
         # Set up the button's color
@@ -173,7 +173,7 @@ def game_loop():
     back_button = Button((width / 8, height - height / 20), (width / 7, width / 7),
                          (110, 110, 110), int(height * .1), 'black', "Back", True)
     next_button = Button((width * 0.875, height - height / 20), (width / 7, width / 7),
-                         (125, 255, 115), int(height * .1), 'black', "Next", True)
+                         (125, 255, 115), int(height * .1), 'black', "New Room", True)
     close_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
                           (255, 115, 115), int(height * .1), 'black', "Exit Dungeon", True)
 
@@ -185,27 +185,31 @@ def game_loop():
     curr_room_item = socket.recv().decode()
     prev_msg_part_01 = ""  # Used to store the first half of the description for use in going back
     prev_msg_part_02 = ""  # Used to store the second half of the description for use in going back
-    room_counter = 1       # The number of rooms that have been traversed. 0 indicates the first room
+    is_first_room = True   # Whether the current room is the first room
     is_game_running = True
 
     while is_game_running:
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
+
+                # Back button goes back one room. A further press returns to the main menu
                 if back_button.check_press(event.pos):
-                    room_counter -= 1
                     screen.fill('black')   # Clear the screen so the previous page appears properly
-                    if room_counter <= 0:  # If this is the first room, go back to the main menu
+                    if is_first_room:      # If this is the first room, go back to the main menu
                         is_game_running = False
                         return_state = 'BACK'
                     else:                  # If this is not the first room, go back to the previous room
+                        is_first_room = True
                         text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font, rect,
                                                                                                      rect_width,
                                                                                                      prev_msg_part_01,
                                                                                                      prev_msg_part_02)
                         draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
 
+                # Next button generates a new room. These rooms are not saved like previous rooms, so going back
+                # and then forward will generate a new room.
                 elif next_button.check_press(event.pos):
-                    room_counter += 1
+                    is_first_room = False
                     screen.fill('black')       # Clear the screen so the previous page appears properly
                     prev_msg_part_01 = msg_01  # Store this room's description part 1 in case we return to this room
                     prev_msg_part_02 = msg_02  # Store this room's description part 2 in case we return to this room
