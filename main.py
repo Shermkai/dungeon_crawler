@@ -22,8 +22,11 @@ class Button:
         self._color = button_color
 
     def set_text(self, new_text):
+        """Updates the button's text"""
+
         self._text = self._font.render(new_text, True, self._text_color,
                                        wraplength=self._text_wrap_length)
+        self._text_rect = self._text.get_rect(center=self._button_rect.center)
 
     def draw(self, position):
         """Draws and displays the button"""
