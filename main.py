@@ -12,12 +12,18 @@ class Button:
             self._button_rect.midbottom = position
 
         # Set up button text
-        font = pygame.font.SysFont('arial', text_size)
-        self._text = font.render(text, True, text_color, wraplength=int(size[0] * 0.975))
+        self._font = pygame.font.SysFont('arial', text_size)
+        self._text_color = text_color
+        self._text_wrap_length = int(size[0] * 0.975)
+        self._text = self._font.render(text, True, self._text_color, wraplength=self._text_wrap_length)
         self._text_rect = self._text.get_rect(center=self._button_rect.center)
 
         # Set up the button's color
         self._color = button_color
+
+    def set_text(self, new_text):
+        self._text = self._font.render(new_text, True, self._text_color,
+                                       wraplength=self._text_wrap_length)
 
     def draw(self, position):
         """Draws and displays the button"""
@@ -171,7 +177,7 @@ def game_loop():
 
     # Create buttons
     back_button = Button((width / 8, height - height / 20), (width / 7, width / 7),
-                         (110, 110, 110), int(height * .1), 'black', "Back", True)
+                         (110, 110, 110), int(height * .1), 'black', "Menu", True)
     next_button = Button((width * 0.875, height - height / 20), (width / 7, width / 7),
                          (125, 255, 115), int(height * .1), 'black', "New Room", True)
     close_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
@@ -200,6 +206,7 @@ def game_loop():
                         return_state = 'BACK'
                     else:                  # If this is not the first room, go back to the previous room
                         is_first_room = True
+                        back_button.set_text("Menu")
                         text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font, rect,
                                                                                                      rect_width,
                                                                                                      prev_msg_part_01,
@@ -213,6 +220,8 @@ def game_loop():
                     screen.fill('black')       # Clear the screen so the previous page appears properly
                     prev_msg_part_01 = msg_01  # Store this room's description part 1 in case we return to this room
                     prev_msg_part_02 = msg_02  # Store this room's description part 2 in case we return to this room
+
+                    back_button.set_text("Back")
                     text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font, rect, rect_width)
                     draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
 

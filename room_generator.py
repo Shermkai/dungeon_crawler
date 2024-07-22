@@ -11,7 +11,7 @@ def generate_room(is_first_half):
     feelings = ['dread', 'fear', 'joy', 'sadness', 'anger', 'laughter', 'melancholy', 'rage', 'hope', 'anxiety',
                 'nostalgia', 'jumpiness', 'nothingness', 'disgust', 'intrigue']
     room_types = ['jail', 'chapel', 'bedroom', 'forge', 'bathhouse', 'animal chamber', 'garden', 'schoolroom',
-                  'storage chamber', 'fridge', 'artisan chamber', 'workshop', 'child\'s room', 'burial site',
+                  'storage chamber', 'fridge', 'painter\'s studio', 'workshop', 'child\'s room', 'burial site',
                   'corridor', 'kitchen', 'dining room', 'ballroom']
     items = ['key', 'sword', 'torch', 'bone']
     monsters = ['slime']
