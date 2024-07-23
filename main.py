@@ -36,7 +36,7 @@ class Button:
 
         # If the cursor is on the button, override the default rectangle with an outlined one
         if self._button_rect.collidepoint(position):
-            pygame.draw.rect(screen, 'white', self._button_rect, 5, border_radius=1)
+            pygame.draw.rect(screen, 'white', self._button_rect, 10, border_radius=1)
 
         screen.blit(self._text, self._text_rect)  # Display the text
 
@@ -218,9 +218,9 @@ def game_loop():
     draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
 
     # Create buttons
-    back_button = Button((width / 8, height - height / 20), (width / 7, width / 7),
+    back_button = Button((width / 5, height - height / 20), (width / 3.5, height / 7),
                          (110, 110, 110), int(height * .1), 'black', "Menu", True)
-    next_button = Button((width * 0.875, height - height / 20), (width / 7, width / 7),
+    next_button = Button((width * 0.8, height - height / 20), (width / 3.5, height / 7),
                          (125, 255, 115), int(height * .1), 'black', "New Room", True)
     close_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
                           (255, 115, 115), int(height * .1), 'black', "Exit Dungeon", True)
