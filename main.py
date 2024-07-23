@@ -142,12 +142,18 @@ def inventory():
                          (255, 115, 115), int(height * .095), 'black', "Exit Inventory", True)
 
     # Set up top row of rectangles
+    font = pygame.font.SysFont('arial', int(height * .075))
     rect_x_pos = 480
     for _ in range(3):
         rect = pygame.Rect((rect_x_pos, height / 5), (300, 300))
         rect.center = (rect_x_pos, height / 5)
         pygame.draw.rect(screen, 'white', rect)
         rect_x_pos += width / 4
+
+        # Place text
+        text = font.render("TEST", True, 'black')
+        text_rect = text.get_rect(center=rect.center)
+        screen.blit(text, text_rect)
 
     # Set up bottom row of rectangles
     rect_x_pos = 720
@@ -156,6 +162,11 @@ def inventory():
         rect.center = (rect_x_pos, height * 0.54)  # 0.54 factor ensures same margins above rectangles
         pygame.draw.rect(screen, 'white', rect)
         rect_x_pos += width / 4
+
+        # Place text
+        text = font.render("TEST", True, 'black')
+        text_rect = text.get_rect(center=rect.center)
+        screen.blit(text, text_rect)
 
     is_inventory_showing = True
 
