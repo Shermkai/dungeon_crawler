@@ -132,6 +132,55 @@ def kill_microservices():
 
     socket.send_string("Q")
 
+def inventory():
+    """Displays and manipulates the player's inventory"""
+
+    screen.fill('black')
+
+    exit_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
+                         (255, 115, 115), int(height * .095), 'black', "Exit Inventory", True)
+
+    # Set up top row of rectangles
+    font = pygame.font.SysFont('arial', int(height * .075))
+    rect_x_pos = 480
+    for _ in range(3):
+        rect = pygame.Rect((rect_x_pos, height / 5), (300, 300))
+        rect.center = (rect_x_pos, height / 5)
+        pygame.draw.rect(screen, 'white', rect)
+        rect_x_pos += width / 4
+
+        # Place text
+        text = font.render("TEST", True, 'black')
+        text_rect = text.get_rect(center=rect.center)
+        screen.blit(text, text_rect)
+
+    # Set up bottom row of rectangles
+    rect_x_pos = 720
+    for _ in range(2):
+        rect = pygame.Rect((rect_x_pos, height / 2), (300, 300))
+        rect.center = (rect_x_pos, height * 0.54)  # 0.54 factor ensures same margins above rectangles
+        pygame.draw.rect(screen, 'white', rect)
+        rect_x_pos += width / 4
+
+        # Place text
+        text = font.render("TEST", True, 'black')
+        text_rect = text.get_rect(center=rect.center)
+        screen.blit(text, text_rect)
+
+    is_inventory_showing = True
+
+    while is_inventory_showing:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if exit_button.check_press(event.pos):
+                    screen.fill('black')
+                    is_inventory_showing = False
+
+        if is_inventory_showing:
+            exit_button.draw(pygame.mouse.get_pos())
+
+        pygame.display.flip()
+
 
 def draw_game_loop(new_text_01, new_text_02, new_controls, new_text_rect_01, new_text_rect_02, new_controls_rect,
                    new_rect):
@@ -184,12 +233,14 @@ def game_loop():
     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
 
     # Create buttons
-    back_button = Button((width / 8, height - height / 20), (width / 7, width / 7),
+    back_button = Button((width / 5, height - height / 20), (width / 3.5, height / 7),
                          (110, 110, 110), int(height * .1), 'black', "Menu", True)
-    next_button = Button((width * 0.875, height - height / 20), (width / 7, width / 7),
+    next_button = Button((width * 0.8, height - height / 20), (width / 3.5, height / 7),
                          (125, 255, 115), int(height * .1), 'black', "New Room", True)
     close_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
                           (255, 115, 115), int(height * .1), 'black', "Exit Dungeon", True)
+    inventory_button = Button((width / 2, height - height / 5), (width / 3.5, height / 7),
+                              (110, 110, 110), int(height * .1), 'black', "Inventory", True)
 
     # Indicates if the game loop was exited via going back or closing the game.
     # Can be either 'BACK' or 'CLOSE'
@@ -212,6 +263,9 @@ def game_loop():
                     is_back = True
                 elif next_button.check_press(event.pos):
                     is_next = True
+                elif inventory_button.check_press(event.pos):
+                    inventory()
+                    draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
                 elif close_button.check_press(event.pos):
                     is_game_running = not closure_popup.routine()
 
@@ -263,6 +317,7 @@ def game_loop():
             back_button.draw(pygame.mouse.get_pos())
             next_button.draw(pygame.mouse.get_pos())
             close_button.draw(pygame.mouse.get_pos())
+            inventory_button.draw(pygame.mouse.get_pos())
 
         pygame.display.flip()
 
