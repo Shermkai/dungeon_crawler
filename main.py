@@ -133,11 +133,13 @@ def kill_microservices():
     socket.send_string("Q")
 
 
-def draw_game_loop(new_text_01, new_text_02, new_text_rect_01, new_text_rect_02, new_rect):
+def draw_game_loop(new_text_01, new_text_02, new_controls, new_text_rect_01, new_text_rect_02, new_controls_rect,
+                   new_rect):
     """Redraws game loop elements that may have been cleared"""
 
     screen.blit(new_text_01, new_text_rect_01)
     screen.blit(new_text_02, new_text_rect_02)
+    screen.blit(new_controls, new_controls_rect)
     pygame.draw.rect(screen, 'white', new_rect, 5, border_radius=1)
 
 
@@ -173,10 +175,13 @@ def game_loop():
     rect.center = rect_pos
 
     # Create text
-    font = pygame.font.SysFont('arial', int(height * .075))
-    text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font, rect, rect_width)
+    font_small = pygame.font.SysFont('arial', int(height * .035))
+    ctrls_text = font_small.render("← to go back | → to go forward", True, 'white')
+    ctrls_text_rect = ctrls_text.get_rect(center=(width / 2, height * 0.64))
+    font_large = pygame.font.SysFont('arial', int(height * .075))
+    text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect, rect_width)
 
-    draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
+    draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
 
     # Create buttons
     back_button = Button((width / 8, height - height / 20), (width / 7, width / 7),
@@ -198,44 +203,57 @@ def game_loop():
     is_game_running = True
 
     while is_game_running:
+        is_back = False  # Whether the next action is to go back to previous room/menu
+        is_next = False  # Whether the next action is to go forward to a new room
+
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN:
-
-                # Back button goes back one room. A further press returns to the main menu
+            if event.type == pygame.MOUSEBUTTONDOWN:  # Check if mouse is over a button and respond accordingly
                 if back_button.check_press(event.pos):
-                    screen.fill('black')   # Clear the screen so the previous page appears properly
-                    if is_first_room:      # If this is the first room, go back to the main menu
-                        is_game_running = False
-                        return_state = 'BACK'
-                    else:                  # If this is not the first room, go back to the previous room
-                        is_first_room = True
-                        back_button.set_text("Menu")
-                        text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font, rect,
-                                                                                                     rect_width,
-                                                                                                     prev_msg_part_01,
-                                                                                                     prev_msg_part_02)
-                        draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
-
-                # Next button generates a new room. These rooms are not saved like previous rooms, so going back
-                # and then forward will generate a new room.
+                    is_back = True
                 elif next_button.check_press(event.pos):
-                    is_first_room = False
-                    screen.fill('black')       # Clear the screen so the previous page appears properly
-                    prev_msg_part_01 = msg_01  # Store this room's description part 1 in case we return to this room
-                    prev_msg_part_02 = msg_02  # Store this room's description part 2 in case we return to this room
-
-                    back_button.set_text("Back")
-                    text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font, rect, rect_width)
-                    draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
-
+                    is_next = True
                 elif close_button.check_press(event.pos):
                     is_game_running = not closure_popup.routine()
 
                     # Re-display the text and rectangle if the game wasn't closed
                     if is_game_running:
-                        draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
+                        draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
                     else:  # If the game was closed, indicate such
                         return_state = 'CLOSE'
+
+            elif event.type == pygame.KEYDOWN:  # Check if either of the arrow keys are pressed and respond accordingly
+                if event.key == pygame.K_LEFT:
+                    is_back = True
+                elif event.key == pygame.K_RIGHT:
+                    is_next = True
+
+            # Back button or left arrow goes back one room. A further press returns to the main menu
+            if is_back:
+                screen.fill('black')   # Clear the screen so the previous page appears properly
+                if is_first_room:      # If this is the first room, go back to the main menu
+                    is_game_running = False
+                    return_state = 'BACK'
+                else:                  # If this is not the first room, go back to the previous room
+                    is_first_room = True
+                    back_button.set_text("Menu")
+                    text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
+                                                                                                 rect_width,
+                                                                                                 prev_msg_part_01,
+                                                                                                 prev_msg_part_02)
+                    draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
+
+            # Next button or right arrow generates a new room. These rooms are not saved like previous rooms,
+            # so going back and then forward will generate a new room.
+            elif is_next:
+                is_first_room = False
+                screen.fill('black')       # Clear the screen so the previous page appears properly
+                prev_msg_part_01 = msg_01  # Store this room's description part 1 in case we return to this room
+                prev_msg_part_02 = msg_02  # Store this room's description part 2 in case we return to this room
+
+                back_button.set_text("Back")
+                text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
+                                                                                             rect_width)
+                draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
 
             elif event.type == pygame.QUIT:
                 is_game_running = False
