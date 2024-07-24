@@ -132,6 +132,7 @@ def kill_microservices():
 
     socket.send_string("Q")
 
+
 def inventory():
     """Displays and manipulates the player's inventory"""
 
@@ -224,10 +225,10 @@ def game_loop():
     rect.center = rect_pos
 
     # Create text
-    font_small = pygame.font.SysFont('arial', int(height * .035))
-    ctrls_text = font_small.render("← to go back | → to go forward", True, 'white')
-    ctrls_text_rect = ctrls_text.get_rect(center=(width / 2, height * 0.64))
+    font_small = pygame.font.SysFont('arial', int(height * .03))
     font_large = pygame.font.SysFont('arial', int(height * .075))
+    ctrls_text = font_small.render("← to go back | → to go forward", True, 'white')
+    ctrls_text_rect = ctrls_text.get_rect(center=(width / 2, height * 0.635))
     text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect, rect_width)
 
     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
@@ -265,7 +266,7 @@ def game_loop():
                     is_next = True
                 elif inventory_button.check_press(event.pos):
                     inventory()
-                    draw_game_loop(text_01, text_02, text_rect_01, text_rect_02, rect)
+                    draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
                 elif close_button.check_press(event.pos):
                     is_game_running = not closure_popup.routine()
 
