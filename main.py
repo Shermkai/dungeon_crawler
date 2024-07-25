@@ -36,7 +36,7 @@ class Button:
 
         # If the cursor is on the button, override the default rectangle with an outlined one
         if self._button_rect.collidepoint(position):
-            pygame.draw.rect(screen, 'white', self._button_rect, 5, border_radius=1)
+            pygame.draw.rect(screen, 'white', self._button_rect, 10, border_radius=1)
 
         screen.blit(self._text, self._text_rect)  # Display the text
 
