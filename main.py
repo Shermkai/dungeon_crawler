@@ -188,16 +188,16 @@ def draw_game_loop(new_text_01, new_text_02, new_controls, new_text_rect_01, new
                    new_rect):
     """Redraws game loop elements that may have been cleared"""
 
-    screen.blit(new_text_01, new_text_rect_01)
-    screen.blit(new_text_02, new_text_rect_02)
-    screen.blit(new_controls, new_controls_rect)
+    screen.blit(new_text_01, new_text_rect_01)    # First half of description
+    screen.blit(new_text_02, new_text_rect_02)    # Second half of description
+    screen.blit(new_controls, new_controls_rect)  # Controls
     pygame.draw.rect(screen, 'white', new_rect, 5, border_radius=1)
 
 
 def generate_text(new_font, new_rect, new_rect_width, message_part_01="", message_part_02=""):
     """Generates new displayable text for the game loop and returns all its components"""
 
-    # Request and receive text data from room_generator.py microservice if default variables were not overridden
+    # Request and receive text data from room_generator.py microservice if default parameters were not overridden
     if message_part_01 == "":
         socket.send_string("RM1")
         message_part_01 = socket.recv().decode()

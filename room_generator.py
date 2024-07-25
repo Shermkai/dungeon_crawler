@@ -57,13 +57,13 @@ while True:
             break
 
         print("[RG] Returning data to client...")
-        if message.decode() == 'RM1':
+        if message.decode() == 'RM1':     # Room message part 1
             description_reply, item_reply = generate_room(True)
             socket.send_string(description_reply)
-        elif message.decode() == 'RM2':
+        elif message.decode() == 'RM2':   # Room message part 2
             description_reply, item_reply = generate_room(False)
             socket.send_string(description_reply)
-        elif message.decode() == 'ITEM':
+        elif message.decode() == 'ITEM':  # Room item
             socket.send_string(item_reply)
 
 print("[RG] Closed room_generator.py")
