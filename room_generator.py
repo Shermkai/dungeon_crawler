@@ -7,7 +7,8 @@ def generate_room(is_first_half):
 
     adjectives = ['dark', 'smelly', 'mossy', 'overgrown', 'cold', 'humid', 'decrepit', 'crumbling', 'volcanic',
                   'frozen', 'cluttered', 'hot', 'pleasant', 'horrifying', 'dirty', 'pristine', 'carpeted', 'quaint',
-                  'extravagant', 'dry', 'silent', 'echoey', 'mushy', 'dripping', 'beautiful', 'haunting', 'grassy']
+                  'extravagant', 'dry', 'silent', 'echoey', 'mushy', 'dripping', 'beautiful', 'haunting', 'grassy',
+                  'mystical', 'arcane']
     materials = ['stone', 'wood', 'ceramic', 'steel', 'slime', 'magma', 'dirt', 'meteorite', 'glass', 'clay',
                  'organic matter', 'ice', 'cheese', 'crystal']
     feelings = ['dread', 'fear', 'joy', 'sadness', 'anger', 'laughter', 'melancholy', 'rage', 'hope', 'anxiety',
@@ -17,7 +18,7 @@ def generate_room(is_first_half):
                   'storage chamber', 'fridge', 'painter\'s studio', 'workshop', 'child\'s area', 'crypt',
                   'corridor', 'kitchen', 'dining room', 'ballroom', 'morgue', 'laboratory', 'recreational area',
                   'museum']
-    clutter = ['cobwebs', 'ingots', 'bones', 'trash', 'art supplies', 'strange animal hair']
+    clutter = ['cobwebs', 'ingots', 'bones', 'trash piles', 'art supplies', 'strange animal hairs']
     items = ['key', 'sword', 'torch', 'bone']
     monsters = ['slime']
     door_position = ['north', 'east', 'south', 'west']
@@ -28,17 +29,41 @@ def generate_room(is_first_half):
         monster = " and a " + random.choice(monsters)
 
     item = ""
-    description = ""
+    first_template_val = random.random()
+    second_template_val = random.random()
     if is_first_half:
-        description = ("You enter a(n) " + random.choice(adjectives) + " room, its walls made of " +
-                       random.choice(materials) + ". Immediately upon entry, you feel an intense feeling of " +
-                       random.choice(feelings) + ", for the room appears to be a(n) " + random.choice(room_types) +
-                       ".")
+        if first_template_val < 0.33:
+            description = ("You enter a(n) " + random.choice(adjectives) + " room, its aging walls made of " +
+                           random.choice(materials) + ". Immediately upon entry, you are overcome with an intense " +
+                           "feeling of " + random.choice(feelings) + ", for the room appears to be a(n) " +
+                           random.choice(room_types) + ".")
+        elif 0.33 <= first_template_val < 0.66:
+            description = ("A site of pure " + random.choice(feelings) + " lies before you. Countless " +
+                           random.choice(clutter) + " choke the space, almost obscuring the " +
+                           random.choice(materials) + " flooring. The " + random.choice(adjectives) +
+                           " nature of the room overwhelms you, revealing that it is undoubtedly a " +
+                           random.choice(room_types) + ".")
+        else:
+            description = ("This " + random.choice(room_types) + " harbors nothing but pure " +
+                           random.choice(feelings) + ". While seemingly normal on the surface, " +
+                           random.choice(materials) + " coats the walls, floors, and ceiling, only heightening " +
+                           "whatever you feel in the moment. " + "To make present matters even more abnormal, " +
+                           "a swarm of " + random.choice(clutter) + " floods the tabletops and ground.")
     else:
         item = random.choice(items)
-        description = ("Inside, you are greeted by a(n) " + item + monster +
-                       ". There is a door to the " + random.choice(door_position) + " made of " +
-                       random.choice(materials) + ". What do you do...?")
+        if second_template_val < 0.33:
+            description = ("Inside, you are greeted by a(n) " + item + monster +
+                           ". There is a door to the " + random.choice(door_position) + " made of " +
+                           random.choice(materials) + ". What do you do...?")
+        elif 0.33 <= second_template_val < 0.66:
+            description = ("Deeper within, your eye catches a glimpse of a(n) " + item + monster +
+                           ". You also spot the glint of a doorknob to the " + random.choice(door_position) +
+                           " attached to a slab of " + random.choice(materials) + ". What do you do...?")
+        else:
+            description = ("Amongst a sea of futility, you do manage to find a(n) " + item + monster +
+                           ". Your only way out of this place other than backtracking is through the " +
+                           random.choice(materials) + " door that barricades the room from the " +
+                           random.choice(door_position) + ". What do you do...?")
 
     return description, item
 

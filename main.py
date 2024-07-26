@@ -238,7 +238,7 @@ def game_loop():
 
     # Create text
     font_small = pygame.font.SysFont('arial', int(height * .03))
-    font_large = pygame.font.SysFont('arial', int(height * .075))
+    font_large = pygame.font.SysFont('arial', int(height * .05))
     ctrls_text = font_small.render("← to go back | → to go forward", True, 'white')
     ctrls_text_rect = ctrls_text.get_rect(center=(width / 2, height * 0.635))
     text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect, rect_width)
