@@ -188,8 +188,8 @@ def draw_game_loop(new_text_01, new_text_02, new_controls, new_text_rect_01, new
                    new_rect):
     """Redraws game loop elements that may have been cleared"""
 
-    screen.blit(new_text_01, new_text_rect_01)    # First half of description
-    screen.blit(new_text_02, new_text_rect_02)    # Second half of description
+    screen.blit(new_text_01, new_text_rect_01)  # First half of description
+    screen.blit(new_text_02, new_text_rect_02)  # Second half of description
     screen.blit(new_controls, new_controls_rect)  # Controls
     pygame.draw.rect(screen, 'white', new_rect, 5, border_radius=1)
 
@@ -243,6 +243,8 @@ def game_loop():
                           (255, 115, 115), int(height * .1), 'black', "Exit Dungeon", True)
     inventory_button = Button((width / 2, height - height / 5), (width / 3.5, height / 7),
                               (110, 110, 110), int(height * .1), 'black', "Inventory", True)
+    item_button = Button((width / 5, height - height / 5), (width / 3.5, height / 7),
+                         (110, 110, 110), int(height * .1), 'black', "Grab Item", True)
 
     # Indicates if the game loop was exited via going back or closing the game.
     # Can be either 'BACK' or 'CLOSE'
@@ -250,6 +252,7 @@ def game_loop():
 
     socket.send_string("ITEM")
     curr_room_item = socket.recv().decode()
+    prev_room_item = ""    # Used to store a room's item for use in going back
     prev_msg_part_01 = ""  # Used to store the first half of the description for use in going back
     prev_msg_part_02 = ""  # Used to store the second half of the description for use in going back
     is_first_room = True   # Whether the current room is the first room
@@ -268,6 +271,8 @@ def game_loop():
                 elif inventory_button.check_press(event.pos):
                     inventory()
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
+                elif item_button.check_press(event.pos):
+                    print("Grabbed", curr_room_item)
                 elif close_button.check_press(event.pos):
                     is_game_running = not closure_popup.routine()
 
@@ -285,30 +290,34 @@ def game_loop():
 
             # Back button or left arrow goes back one room. A further press returns to the main menu
             if is_back:
-                screen.fill('black')   # Clear the screen so the previous page appears properly
-                if is_first_room:      # If this is the first room, go back to the main menu
+                screen.fill('black')  # Clear the screen so the previous page appears properly
+                if is_first_room:  # If this is the first room, go back to the main menu
                     is_game_running = False
                     return_state = 'BACK'
-                else:                  # If this is not the first room, go back to the previous room
+                else:  # If this is not the first room, go back to the previous room
                     is_first_room = True
                     back_button.set_text("Menu")
                     text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                                  rect_width,
                                                                                                  prev_msg_part_01,
                                                                                                  prev_msg_part_02)
+                    curr_room_item = prev_room_item
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
 
             # Next button or right arrow generates a new room. These rooms are not saved like previous rooms,
             # so going back and then forward will generate a new room.
             elif is_next:
                 is_first_room = False
-                screen.fill('black')       # Clear the screen so the previous page appears properly
-                prev_msg_part_01 = msg_01  # Store this room's description part 1 in case we return to this room
-                prev_msg_part_02 = msg_02  # Store this room's description part 2 in case we return to this room
+                screen.fill('black')             # Clear the screen so the previous page appears properly
+                prev_msg_part_01 = msg_01        # Store this room's description part 1 in case we return
+                prev_msg_part_02 = msg_02        # Store this room's description part 2 in case we return
+                prev_room_item = curr_room_item  # Store this room's item in case we return to this room
 
                 back_button.set_text("Back")
                 text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                              rect_width)
+                socket.send_string("ITEM")
+                curr_room_item = socket.recv().decode()
                 draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
 
             elif event.type == pygame.QUIT:
@@ -320,6 +329,7 @@ def game_loop():
             next_button.draw(pygame.mouse.get_pos())
             close_button.draw(pygame.mouse.get_pos())
             inventory_button.draw(pygame.mouse.get_pos())
+            item_button.draw(pygame.mouse.get_pos())
 
         pygame.display.flip()
 
