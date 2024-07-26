@@ -6,13 +6,18 @@ def generate_room(is_first_half):
     """Generates a description for the current room by pulling keywords from lists."""
 
     adjectives = ['dark', 'smelly', 'mossy', 'overgrown', 'cold', 'humid', 'decrepit', 'crumbling', 'volcanic',
-                  'frozen', 'cluttered', 'hot', 'pleasant', 'horrifying', 'dirty', 'pristine']
-    materials = ['stone', 'wood', 'ceramic', 'steel', 'slime', 'magma', 'dirt']
+                  'frozen', 'cluttered', 'hot', 'pleasant', 'horrifying', 'dirty', 'pristine', 'carpeted', 'quaint',
+                  'extravagant', 'dry', 'silent', 'echoey', 'mushy', 'dripping', 'beautiful', 'haunting', 'grassy']
+    materials = ['stone', 'wood', 'ceramic', 'steel', 'slime', 'magma', 'dirt', 'meteorite', 'glass', 'clay',
+                 'organic matter', 'ice', 'cheese', 'crystal']
     feelings = ['dread', 'fear', 'joy', 'sadness', 'anger', 'laughter', 'melancholy', 'rage', 'hope', 'anxiety',
-                'nostalgia', 'jumpiness', 'nothingness', 'disgust', 'intrigue']
-    room_types = ['jail', 'chapel', 'bedroom', 'forge', 'bathhouse', 'animal chamber', 'garden', 'schoolroom',
-                  'storage chamber', 'fridge', 'painter\'s studio', 'workshop', 'child\'s room', 'burial site',
-                  'corridor', 'kitchen', 'dining room', 'ballroom']
+                'nostalgia', 'jumpiness', 'nothingness', 'disgust', 'intrigue', 'pride', 'inspiration',
+                'disappointment', 'misery', 'annoyance', 'jealousy']
+    room_types = ['jail', 'chapel', 'bedroom', 'forge', 'bathhouse', 'stable', 'garden', 'schoolroom',
+                  'storage chamber', 'fridge', 'painter\'s studio', 'workshop', 'child\'s area', 'crypt',
+                  'corridor', 'kitchen', 'dining room', 'ballroom', 'morgue', 'laboratory', 'recreational area',
+                  'museum']
+    clutter = ['cobwebs', 'ingots', 'bones', 'trash', 'art supplies', 'strange animal hair']
     items = ['key', 'sword', 'torch', 'bone']
     monsters = ['slime']
     door_position = ['north', 'east', 'south', 'west']
@@ -25,13 +30,13 @@ def generate_room(is_first_half):
     item = ""
     description = ""
     if is_first_half:
-        description = ("You enter a " + random.choice(adjectives) + " room, its walls made of " +
+        description = ("You enter a(n) " + random.choice(adjectives) + " room, its walls made of " +
                        random.choice(materials) + ". Immediately upon entry, you feel an intense feeling of " +
-                       random.choice(feelings) + ", for the room appears to be a " + random.choice(room_types) +
+                       random.choice(feelings) + ", for the room appears to be a(n) " + random.choice(room_types) +
                        ".")
     else:
         item = random.choice(items)
-        description = ("Inside, you are greeted by a " + item + monster +
+        description = ("Inside, you are greeted by a(n) " + item + monster +
                        ". There is a door to the " + random.choice(door_position) + " made of " +
                        random.choice(materials) + ". What do you do...?")
 
