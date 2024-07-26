@@ -250,8 +250,10 @@ def game_loop():
     # Can be either 'BACK' or 'CLOSE'
     return_state = ''
 
+    # Get the item for the current room
     socket.send_string("ITEM")
     curr_room_item = socket.recv().decode()
+
     prev_room_item = ""    # Used to store a room's item for use in going back
     prev_msg_part_01 = ""  # Used to store the first half of the description for use in going back
     prev_msg_part_02 = ""  # Used to store the second half of the description for use in going back
@@ -291,12 +293,14 @@ def game_loop():
             # Back button or left arrow goes back one room. A further press returns to the main menu
             if is_back:
                 screen.fill('black')  # Clear the screen so the previous page appears properly
-                if is_first_room:  # If this is the first room, go back to the main menu
+                if is_first_room:     # If this is the first room, go back to the main menu
                     is_game_running = False
                     return_state = 'BACK'
                 else:  # If this is not the first room, go back to the previous room
                     is_first_room = True
                     back_button.set_text("Menu")
+
+                    # Retrieve the previous room
                     text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                                  rect_width,
                                                                                                  prev_msg_part_01,
@@ -312,8 +316,9 @@ def game_loop():
                 prev_msg_part_01 = msg_01        # Store this room's description part 1 in case we return
                 prev_msg_part_02 = msg_02        # Store this room's description part 2 in case we return
                 prev_room_item = curr_room_item  # Store this room's item in case we return to this room
-
                 back_button.set_text("Back")
+
+                # Generate the new room
                 text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                              rect_width)
                 socket.send_string("ITEM")
