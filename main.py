@@ -21,6 +21,8 @@ class Button:
         # Set up the button's color
         self._color = button_color
 
+        self._is_active = True
+
     def set_text(self, new_text):
         """Updates the button's text"""
 
@@ -28,17 +30,24 @@ class Button:
                                        wraplength=self._text_wrap_length)
         self._text_rect = self._text.get_rect(center=self._button_rect.center)
 
+    def set_is_active(self, new_state):
+        """Updates the active/inactive state of the button"""
+        self._is_active = not new_state
+
     def draw(self, position):
         """Draws and displays the button"""
 
-        # Draw the default rectangle initially
-        pygame.draw.rect(screen, self._color, self._button_rect)
+        if self._is_active:
+            # Draw the default rectangle initially
+            pygame.draw.rect(screen, self._color, self._button_rect)
 
-        # If the cursor is on the button, override the default rectangle with an outlined one
-        if self._button_rect.collidepoint(position):
-            pygame.draw.rect(screen, 'white', self._button_rect, 10, border_radius=1)
+            # If the cursor is on the button, override the default rectangle with an outlined one
+            if self._button_rect.collidepoint(position):
+                pygame.draw.rect(screen, 'white', self._button_rect, 10, border_radius=1)
 
-        screen.blit(self._text, self._text_rect)  # Display the text
+            screen.blit(self._text, self._text_rect)  # Display the text
+        else:
+            pygame.draw.rect(screen, 'black', self._button_rect)
 
     def check_press(self, position):
         """Returns True or False depending on whether the button is being hovered over. Used for clicks."""
@@ -136,14 +145,16 @@ def kill_microservices():
 def inventory():
     """Displays and manipulates the player's inventory"""
 
-    screen.fill('black')
+    screen.fill('black')  # Clear the game loop
 
     exit_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
                          (255, 115, 115), int(height * .095), 'black', "Exit Inventory", True)
 
-    # Set up top row of rectangles
+    # Set up variables to be used by all rectangles
     font = pygame.font.SysFont('arial', int(height * .075))
     square_dimension = height * 0.28
+
+    # Set up top row of rectangles
     square_x_pos = width / 4
     for _ in range(3):
         rect = pygame.Rect((square_x_pos, height / 5), (square_dimension, square_dimension))
@@ -188,8 +199,8 @@ def draw_game_loop(new_text_01, new_text_02, new_controls, new_text_rect_01, new
                    new_rect):
     """Redraws game loop elements that may have been cleared"""
 
-    screen.blit(new_text_01, new_text_rect_01)  # First half of description
-    screen.blit(new_text_02, new_text_rect_02)  # Second half of description
+    screen.blit(new_text_01, new_text_rect_01)    # First half of description
+    screen.blit(new_text_02, new_text_rect_02)    # Second half of description
     screen.blit(new_controls, new_controls_rect)  # Controls
     pygame.draw.rect(screen, 'white', new_rect, 5, border_radius=1)
 
@@ -216,7 +227,7 @@ def generate_text(new_font, new_rect, new_rect_width, message_part_01="", messag
 def game_loop():
     """The core game loop"""
 
-    screen.fill('black')
+    screen.fill('black')  # Clear the menu
 
     # Create text display area
     rect_width = width * .95
@@ -246,18 +257,17 @@ def game_loop():
     item_button = Button((width / 5, height - height / 5), (width / 3.5, height / 7),
                          (110, 110, 110), int(height * .1), 'black', "Grab Item", True)
 
-    # Indicates if the game loop was exited via going back or closing the game.
-    # Can be either 'BACK' or 'CLOSE'
-    return_state = ''
-
     # Get the item for the current room
     socket.send_string("ITEM")
     curr_room_item = socket.recv().decode()
 
-    prev_room_item = ""    # Used to store a room's item for use in going back
-    prev_msg_part_01 = ""  # Used to store the first half of the description for use in going back
-    prev_msg_part_02 = ""  # Used to store the second half of the description for use in going back
-    is_first_room = True   # Whether the current room is the first room
+    return_state = ''            # The state in which the game loop was exited. Either 'BACK' or 'CLOSE'
+    prev_room_item = ""          # Used to store a room's item for use in going back
+    prev_msg_part_01 = ""        # Used to store the first half of the description for use in going back
+    prev_msg_part_02 = ""        # Used to store the second half of the description for use in going back
+    was_curr_item_taken = False  # Whether the current room's item was taken
+    was_prev_item_taken = False  # Whether the previous room's item was taken
+    is_first_room = True         # Whether the current room is the first room
     is_game_running = True
 
     while is_game_running:
@@ -265,7 +275,9 @@ def game_loop():
         is_next = False  # Whether the next action is to go forward to a new room
 
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN:  # Check if mouse is over a button and respond accordingly
+
+            # Check if mouse is over a button and respond accordingly
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 if back_button.check_press(event.pos):
                     is_back = True
                 elif next_button.check_press(event.pos):
@@ -275,6 +287,7 @@ def game_loop():
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
                 elif item_button.check_press(event.pos):
                     print("Grabbed", curr_room_item)
+                    was_curr_item_taken = True
                 elif close_button.check_press(event.pos):
                     is_game_running = not closure_popup.routine()
 
@@ -284,7 +297,8 @@ def game_loop():
                     else:  # If the game was closed, indicate such
                         return_state = 'CLOSE'
 
-            elif event.type == pygame.KEYDOWN:  # Check if either of the arrow keys are pressed and respond accordingly
+            # Check if either of the arrow keys were pressed and respond accordingly
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     is_back = True
                 elif event.key == pygame.K_RIGHT:
@@ -301,6 +315,7 @@ def game_loop():
                     back_button.set_text("Menu")
 
                     # Retrieve the previous room
+                    was_curr_item_taken = was_prev_item_taken
                     text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                                  rect_width,
                                                                                                  prev_msg_part_01,
@@ -312,13 +327,15 @@ def game_loop():
             # so going back and then forward will generate a new room.
             elif is_next:
                 is_first_room = False
-                screen.fill('black')             # Clear the screen so the previous page appears properly
-                prev_msg_part_01 = msg_01        # Store this room's description part 1 in case we return
-                prev_msg_part_02 = msg_02        # Store this room's description part 2 in case we return
-                prev_room_item = curr_room_item  # Store this room's item in case we return to this room
                 back_button.set_text("Back")
+                screen.fill('black')                       # Clear the screen so the previous page appears properly
+                prev_msg_part_01 = msg_01                  # Store this room's description part 1 in case we return
+                prev_msg_part_02 = msg_02                  # Store this room's description part 2 in case we return
+                prev_room_item = curr_room_item            # Store this room's item in case we return to this room
+                was_prev_item_taken = was_curr_item_taken  # Store whether this room's item was taken by the player
 
                 # Generate the new room
+                was_curr_item_taken = False
                 text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                              rect_width)
                 socket.send_string("ITEM")
@@ -328,6 +345,7 @@ def game_loop():
             elif event.type == pygame.QUIT:
                 is_game_running = False
 
+        # Draw buttons
         # Without this if statement, closing the game will flash the buttons
         if is_game_running:
             back_button.draw(pygame.mouse.get_pos())
@@ -335,6 +353,7 @@ def game_loop():
             close_button.draw(pygame.mouse.get_pos())
             inventory_button.draw(pygame.mouse.get_pos())
             item_button.draw(pygame.mouse.get_pos())
+            item_button.set_is_active(was_curr_item_taken)
 
         pygame.display.flip()
 
