@@ -142,6 +142,37 @@ def kill_microservices():
     socket.send_string("Q")
 
 
+def win_screen():
+    """Displays the screen that appears when the game is won.
+    Returns False when the close button is pressed to indicate that the game loop should stop executing."""
+
+    screen.fill('black')  # Clear the game loop
+
+    exit_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
+                         (255, 115, 115), int(height * .095), 'black', "Exit Game", True)
+
+    # Set up and draw text
+    font = pygame.font.SysFont('arial', int(height * 0.25))
+    text = font.render("You Win!!!", True, 'white')
+    screen.blit(text, text.get_rect(center=(width / 2, height / 2)))
+
+    is_screen_showing = True
+
+    while is_screen_showing:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if exit_button.check_press(event.pos):
+                    screen.fill('black')
+                    is_screen_showing = False
+
+        if is_screen_showing:
+            exit_button.draw(pygame.mouse.get_pos())
+
+        pygame.display.flip()
+
+    return False
+
+
 def inventory():
     """Displays and manipulates the player's inventory"""
 
@@ -307,6 +338,9 @@ def game_loop():
                     is_back = True
                 elif event.key == pygame.K_RIGHT:
                     is_next = True
+                elif event.key == pygame.K_w:
+                    is_game_running = win_screen()
+                    return_state = 'CLOSE'
 
             # Back button or left arrow goes back one room. A further press returns to the main menu
             if is_back:
