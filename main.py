@@ -1,3 +1,5 @@
+import socket
+
 import pygame
 import zmq
 import subprocess
@@ -120,6 +122,7 @@ class Popup:
 
 # Run microservices in background
 subprocess.Popen(["python", "room_generator.py"])
+subprocess.Popen(["python", "win_checker.py"])
 
 # Global constants
 pygame.init()
@@ -130,16 +133,19 @@ closure_popup = Popup()
 click_sound = pygame.mixer.Sound("click.wav")
 
 # Set up ZeroMQ to communicate between files
-context = zmq.Context()  # Set up environment to create sockets
-socket = context.socket(zmq.REQ)  # Create request socket
-socket.connect("tcp://localhost:5555")
+context = zmq.Context()                      # Set up environment to create sockets
+room_socket = context.socket(zmq.REQ)        # Create request socket A
+win_socket = context.socket(zmq.REQ)         # Create request socket B
+room_socket.connect("tcp://localhost:5555")  # Initialize microservice A
+win_socket.connect("tcp://localhost:5556")   # Initialize microservice B
 
 
 def kill_microservices():
     """Sends a request to each of the microservices to end their execution.
     This is needed to avoid any errors from files not properly closing."""
 
-    socket.send_string("Q")
+    room_socket.send_string('Q')
+    win_socket.send_string('Q')
 
 
 def win_screen():
@@ -241,10 +247,10 @@ def generate_text(new_font, new_rect, new_rect_width, message_part_01="", messag
 
     # Request and receive text data from room_generator.py microservice if default parameters were not overridden
     if message_part_01 == "":
-        socket.send_string("RM1")
-        message_part_01 = socket.recv().decode()
-        socket.send_string("RM2")
-        message_part_02 = socket.recv().decode()
+        room_socket.send_string("RM1")
+        message_part_01 = room_socket.recv().decode()
+        room_socket.send_string("RM2")
+        message_part_02 = room_socket.recv().decode()
 
     # Prepare the text and text rectangles to display in outer scope
     new_text_01 = new_font.render(message_part_01, True, 'white', wraplength=int(new_rect_width * .975))
@@ -291,8 +297,8 @@ def game_loop():
                            'orange', int(height * .1), 'black', "Fight!", True)
 
     # Get the item for the current room
-    socket.send_string("ITEM")
-    curr_room_item = socket.recv().decode()
+    room_socket.send_string("ITEM")
+    curr_room_item = room_socket.recv().decode()
 
     return_state = ''            # The state in which the game loop was exited. Either 'BACK' or 'CLOSE'
     prev_room_item = ""          # Used to store a room's item for use in going back
@@ -321,6 +327,8 @@ def game_loop():
                 elif item_button.check_press(event.pos):
                     print("Grabbed", curr_room_item)
                     was_curr_item_taken = True
+                    win_socket.send_string("CHECK")
+                    win_result = win_socket.recv().decode()
                 elif combat_button.check_press(event.pos):
                     print("Fight!")
                 elif close_button.check_press(event.pos):
@@ -376,8 +384,8 @@ def game_loop():
                 was_curr_item_taken = False
                 text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                              rect_width)
-                socket.send_string("ITEM")
-                curr_room_item = socket.recv().decode()
+                room_socket.send_string("ITEM")
+                curr_room_item = room_socket.recv().decode()
                 draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
 
             elif event.type == pygame.QUIT:
