@@ -20,12 +20,12 @@ def generate_room(is_first_half):
                   'museum']
     clutter = ['cobwebs', 'ingots', 'bones', 'trash piles', 'art supplies', 'strange animal hairs']
     items = ['key', 'sword', 'torch', 'bone']
-    monsters = ['slime']
+    monsters = ['slime', 'skeleton']
     door_position = ['north', 'east', 'south', 'west']
 
-    # Generate a random monster 10% of the time
+    # Generate a random monster 25% of the time
     monster = ""
-    if random.random() > 0.9:
+    if random.random() > 0.75:
         monster = " and a " + random.choice(monsters)
 
     item = ""
