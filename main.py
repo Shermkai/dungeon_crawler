@@ -1,12 +1,11 @@
-import socket
-
 import pygame
 import zmq
 import subprocess
 
 
 class Button:
-    def __init__(self, position, size, button_color, text_size, text_color, text, bottom_anchor=False):
+    def __init__(self, position, size, button_color, text_size, text_color, text, bottom_anchor=False,
+                 button_border_color=(255, 255, 255)):
         # Set up the button rectangle
         self._button_rect = pygame.Rect(position, size)
         self._button_rect.center = position
@@ -22,6 +21,7 @@ class Button:
 
         # Set up the button's color
         self._color = button_color
+        self._border_color = button_border_color
 
         self._is_active = True
 
@@ -45,7 +45,7 @@ class Button:
 
             # If the cursor is on the button, override the default rectangle with an outlined one
             if self._button_rect.collidepoint(position):
-                pygame.draw.rect(screen, 'white', self._button_rect, 10, border_radius=1)
+                pygame.draw.rect(screen, self._border_color, self._button_rect, 10, border_radius=1)
 
             screen.blit(self._text, self._text_rect)  # Display the text
         else:
@@ -78,16 +78,18 @@ class Popup:
 
         # Create buttons
         self._deny_button = Button((width / 3, height / 1.5), (width / 3.5, height / 7),
-                                   (255, 115, 115), int(height * .1), 'black', "No")
+                                   (255, 115, 115), int(height * .1), 'black', "No",
+                                   button_border_color=(205, 50, 50))
         self._confirm_button = Button((width * .67, height / 1.5), (width / 3.5, height / 7),
-                                      (125, 255, 115), int(height * .1), 'black', "Yes")
+                                      (125, 255, 115), int(height * .1), 'black', "Yes",
+                                      button_border_color=(45, 175, 35))
 
     def draw(self):
         """Draws and displays the popup"""
 
         # Draw rectangle and white outline
         pygame.draw.rect(screen, (90, 90, 90), self._popup_rect)
-        pygame.draw.rect(screen, 'white', self._popup_rect, 5, border_radius=1)
+        pygame.draw.rect(screen, 'white', self._popup_rect, 10, border_radius=1)
 
         # Draw buttons
         self._confirm_button.draw(pygame.mouse.get_pos())
@@ -284,17 +286,18 @@ def game_loop():
 
     # Create buttons
     back_button = Button((width / 5, height - height / 20), (width / 3.5, height / 7),
-                         (110, 110, 110), int(height * .1), 'black', "Menu", True)
+                         (160, 160, 160), int(height * .1), 'black', "Menu", True)
     next_button = Button((width * 0.8, height - height / 20), (width / 3.5, height / 7),
-                         (125, 255, 115), int(height * .1), 'black', "New Room", True)
+                         (160, 160, 160), int(height * .1), 'black', "New Room", True)
     close_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
-                          (255, 115, 115), int(height * .1), 'black', "Exit Dungeon", True)
+                          (255, 115, 115), int(height * .1), 'black', "Exit Dungeon",
+                          True, (205, 50, 50))
     inventory_button = Button((width / 2, height - height / 5), (width / 3.5, height / 7),
-                              (110, 110, 110), int(height * .1), 'black', "Inventory", True)
+                              (160, 160, 160), int(height * .1), 'black', "Inventory", True)
     item_button = Button((width / 5, height - height / 5), (width / 3.5, height / 7),
-                         (110, 110, 110), int(height * .1), 'black', "Grab Item", True)
+                         (160, 160, 160), int(height * .1), 'black', "Grab Item", True)
     combat_button = Button((width * 0.8, height - height / 5), (width / 3.5, height / 7),
-                           'orange', int(height * .1), 'black', "Fight!", True)
+                           (160, 160, 160), int(height * .1), 'black', "Fight!", True)
 
     # Get the item for the current room
     room_socket.send_string("ITEM")
@@ -425,9 +428,11 @@ def main_menu():
 
     # Create buttons
     start_button = Button((width / 2, height - height / 3), (width / 3.5, height / 7),
-                          (125, 255, 115), int(height * .1), 'black', "Start Game")
+                          (125, 255, 115), int(height * .1), 'black', "Start Game",
+                          button_border_color=(45, 175, 35))
     close_button = Button((width / 2, height - height / 6), (width / 3.5, height / 7),
-                          (255, 115, 115), int(height * .1), 'black', "Close Game")
+                          (255, 115, 115), int(height * .1), 'black', "Close Game",
+                          button_border_color=(205, 50, 50))
 
     is_menu_running = True
 
