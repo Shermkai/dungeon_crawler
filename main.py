@@ -157,7 +157,8 @@ def win_screen():
     screen.fill('black')  # Clear the game loop
 
     exit_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
-                         (255, 115, 115), int(height * .095), 'black', "Exit Game", True)
+                         (255, 115, 115), int(height * .095), 'black', "Exit Game",
+                         True, (205, 50, 50))
 
     # Set up and draw text
     font = pygame.font.SysFont('arial', int(height * 0.25))
@@ -187,7 +188,8 @@ def inventory():
     screen.fill('black')  # Clear the game loop
 
     exit_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
-                         (255, 115, 115), int(height * .095), 'black', "Exit Inventory", True)
+                         (255, 115, 115), int(height * .095), 'black', "Exit Inventory",
+                         True, (205, 50, 50))
 
     # Set up variables to be used by all rectangles
     font = pygame.font.SysFont('arial', int(height * .075))
