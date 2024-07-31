@@ -294,13 +294,13 @@ def game_loop():
     socket.send_string("ITEM")
     curr_room_item = socket.recv().decode()
 
-    return_state = ''  # The state in which the game loop was exited. Either 'BACK' or 'CLOSE'
-    prev_room_item = ""  # Used to store a room's item for use in going back
-    prev_msg_part_01 = ""  # Used to store the first half of the description for use in going back
-    prev_msg_part_02 = ""  # Used to store the second half of the description for use in going back
+    return_state = ''            # The state in which the game loop was exited. Either 'BACK' or 'CLOSE'
+    prev_room_item = ""          # Used to store a room's item for use in going back
+    prev_msg_part_01 = ""        # Used to store the first half of the description for use in going back
+    prev_msg_part_02 = ""        # Used to store the second half of the description for use in going back
     was_curr_item_taken = False  # Whether the current room's item was taken
     was_prev_item_taken = False  # Whether the previous room's item was taken
-    is_first_room = True  # Whether the current room is the first room
+    is_first_room = True         # Whether the current room is the first room
     is_game_running = True
 
     while is_game_running:
@@ -345,7 +345,7 @@ def game_loop():
             # Back button or left arrow goes back one room. A further press returns to the main menu
             if is_back:
                 screen.fill('black')  # Clear the screen so the previous page appears properly
-                if is_first_room:  # If this is the first room, go back to the main menu
+                if is_first_room:     # If this is the first room, go back to the main menu
                     is_game_running = False
                     return_state = 'BACK'
                 else:  # If this is not the first room, go back to the previous room
@@ -366,10 +366,10 @@ def game_loop():
             elif is_next:
                 is_first_room = False
                 back_button.set_text("Back")
-                screen.fill('black')  # Clear the screen so the previous page appears properly
-                prev_msg_part_01 = msg_01  # Store this room's description part 1 in case we return
-                prev_msg_part_02 = msg_02  # Store this room's description part 2 in case we return
-                prev_room_item = curr_room_item  # Store this room's item in case we return to this room
+                screen.fill('black')                       # Clear the screen so the previous page appears properly
+                prev_msg_part_01 = msg_01                  # Store this room's description part 1 in case we return
+                prev_msg_part_02 = msg_02                  # Store this room's description part 2 in case we return
+                prev_room_item = curr_room_item            # Store this room's item in case we return to this room
                 was_prev_item_taken = was_curr_item_taken  # Store whether this room's item was taken by the player
 
                 # Generate the new room
