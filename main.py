@@ -125,6 +125,7 @@ class Popup:
 # Run microservices in background
 subprocess.Popen(["python", "room_generator.py"])
 subprocess.Popen(["python", "win_checker.py"])
+subprocess.Popen(["python", "inventory_microservice.py"])
 
 # Global constants
 pygame.init()
@@ -135,11 +136,13 @@ closure_popup = Popup()
 click_sound = pygame.mixer.Sound("click.wav")
 
 # Set up ZeroMQ to communicate between files
-context = zmq.Context()                      # Set up environment to create sockets
-room_socket = context.socket(zmq.REQ)        # Create request socket A
-win_socket = context.socket(zmq.REQ)         # Create request socket B
-room_socket.connect("tcp://localhost:5555")  # Initialize microservice A
-win_socket.connect("tcp://localhost:5556")   # Initialize microservice B
+context = zmq.Context()                            # Set up environment to create sockets
+room_socket = context.socket(zmq.REQ)              # Create request socket A
+win_socket = context.socket(zmq.REQ)               # Create request socket B
+inventory_socket = context.socket(zmq.REQ)         # Create request socket C
+room_socket.connect("tcp://localhost:5555")        # Initialize microservice A
+win_socket.connect("tcp://localhost:5556")         # Initialize microservice B
+inventory_socket.connect("tcp://localhost:5557")   # Initialize microservice C
 
 
 def kill_microservices():
@@ -148,6 +151,7 @@ def kill_microservices():
 
     room_socket.send_string('Q')
     win_socket.send_string('Q')
+    inventory_socket.send_string('Q')
 
 
 def win_screen():
