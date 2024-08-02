@@ -334,10 +334,15 @@ def game_loop():
                     inventory()
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
                 elif item_button.check_press(event.pos):
-                    print("Grabbed", curr_room_item)
+                    inventory_socket.send_string(f"add:{curr_room_item}")
+                    accepted = inventory_socket.recv().decode()
                     was_curr_item_taken = True
-                    win_socket.send_string("CHECK")
-                    win_result = win_socket.recv().decode()
+
+                    inventory_socket.send_string("get:all")
+                    win_socket.send_string(inventory_socket.recv().decode())
+                    if win_socket.recv().decode() == "WIN":
+                        is_game_running = win_screen()
+                        return_state = 'CLOSE'
                 elif combat_button.check_press(event.pos):
                     print("Fight!")
                 elif close_button.check_press(event.pos):
