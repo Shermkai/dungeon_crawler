@@ -334,10 +334,12 @@ def game_loop():
                     inventory()
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
                 elif item_button.check_press(event.pos):
+                    # Add the item to the inventory
                     inventory_socket.send_string(f"add:{curr_room_item}")
                     accepted = inventory_socket.recv().decode()
                     was_curr_item_taken = True
 
+                    # Check if the player has 5 items, meaning the game is won
                     inventory_socket.send_string("get:all")
                     win_socket.send_string(inventory_socket.recv().decode())
                     if win_socket.recv().decode() == "WIN":

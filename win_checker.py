@@ -17,7 +17,7 @@ while True:
             break
 
         else:
-            if len(message.split()) >= 5:
+            if len(message.split()) >= 5:  # If the player has 5 items, they won the game
                 print("[WC] Sent to client: WIN")
                 socket.send_string("WIN")
             else:
