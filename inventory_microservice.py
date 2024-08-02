@@ -18,9 +18,14 @@ while True:
 
         if req_type == "add":
             addition = request[4:len(request)]  # Part of the string after the colon
-            key += 1
-            inventory[str(key)] = addition
-            socket.send_string(f"Added: {addition} to the inventory")  # Send back confirmation message
+
+            # If there are no duplicates, add to the list
+            if addition in inventory.values():
+                socket.send_string(f"Did not add: {addition}")
+            else:
+                key += 1
+                inventory[str(key)] = addition
+                socket.send_string(f"Added: {addition} to the inventory")  # Send back confirmation message
 
         elif req_type == "get":
             asked_for = request[4:len(request)]  # Part of the string after the colon
