@@ -198,6 +198,7 @@ def inventory():
     # Set up variables to be used by all rectangles
     font = pygame.font.SysFont('arial', int(height * .075))
     square_dimension = height * 0.28
+    text_coordinates = []
 
     # Set up top row of rectangles
     square_x_pos = width / 4
@@ -207,10 +208,7 @@ def inventory():
         pygame.draw.rect(screen, 'white', rect)
         square_x_pos += width / 4
 
-        # Place text
-        text = font.render("TEST", True, 'black')
-        text_rect = text.get_rect(center=rect.center)
-        screen.blit(text, text_rect)
+        text_coordinates.append(rect.center)
 
     # Set up bottom row of rectangles
     square_x_pos = width * 0.375
@@ -220,14 +218,25 @@ def inventory():
         pygame.draw.rect(screen, 'white', rect)
         square_x_pos += width / 4
 
-        # Place text
-        text = font.render("TEST", True, 'black')
-        text_rect = text.get_rect(center=rect.center)
+        text_coordinates.append(rect.center)
+
+    # Draw text for inventory items
+    inventory_socket.send_string("get:all")
+    inventory_list = inventory_socket.recv().decode()
+    inventory_list = inventory_list.replace(',', '')  # Remove commas
+    inventory_list = inventory_list.split()                        # Turn string into list
+    coord_index = 0                                                # Current index of the list of rectangle coordinates
+    for item in inventory_list:
+        item = item.capitalize()
+        text = font.render(item, True, 'black')
+        text_rect = text.get_rect(center=text_coordinates[coord_index])
         screen.blit(text, text_rect)
+        coord_index += 1
 
     is_inventory_showing = True
 
     while is_inventory_showing:
+
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if exit_button.check_press(event.pos):

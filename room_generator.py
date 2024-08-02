@@ -19,7 +19,7 @@ def generate_room(is_first_half):
                   'corridor', 'kitchen', 'dining room', 'ballroom', 'morgue', 'laboratory', 'recreational area',
                   'museum']
     clutter = ['cobwebs', 'ingots', 'bones', 'trash piles', 'art supplies', 'strange animal hairs']
-    items = ['key', 'sword', 'torch', 'bone']
+    items = ['key', 'sword', 'torch', 'bone', 'slimeball']
     monsters = ['slime', 'skeleton']
     door_position = ['north', 'east', 'south', 'west']
 
