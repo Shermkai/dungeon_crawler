@@ -67,7 +67,7 @@ class Button:
 
     def check_press(self, position):
         """Returns True or False depending on whether the button is being hovered over. Used for clicks."""
-        if self._button_rect.collidepoint(position):
+        if self._button_rect.collidepoint(position) and self._is_active:
             pygame.mixer.Sound.play(click_sound)
             return True
         return False
