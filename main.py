@@ -252,7 +252,7 @@ def inventory():
     for _ in range(3):
         rect = pygame.Rect((square_x_pos, height / 5), (square_dimension, square_dimension))
         rect.center = (square_x_pos, height / 5)
-        pygame.draw.rect(screen, 'white', rect)
+        pygame.draw.rect(screen, (160, 160, 160), rect)
         square_x_pos += width / 4
 
         text_coordinates.append(rect.center)
@@ -262,7 +262,7 @@ def inventory():
     for _ in range(2):
         rect = pygame.Rect((square_x_pos, height / 2), (square_dimension, square_dimension))
         rect.center = (square_x_pos, height * 0.54)  # 0.54 factor ensures same margins above rectangles
-        pygame.draw.rect(screen, 'white', rect)
+        pygame.draw.rect(screen, (160, 160, 160), rect)
         square_x_pos += width / 4
 
         text_coordinates.append(rect.center)
@@ -371,6 +371,8 @@ def game_loop():
     prev_msg_part_02 = ""        # Used to store the second half of the description for use in going back
     was_curr_item_taken = False  # Whether the current room's item was taken
     was_prev_item_taken = False  # Whether the previous room's item was taken
+    was_curr_combat = False      # Whether the player initiated combat in the current room
+    was_prev_combat = False      # Whether the player initiated combat in the previous room
     is_first_room = True         # Whether the current room is the first room
     is_game_running = True
 
@@ -403,6 +405,7 @@ def game_loop():
                         return_state = 'CLOSE'
                 elif combat_button.check_press(event.pos):
                     combat()
+                    was_curr_combat = True
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
                 elif close_button.check_press(event.pos):
                     is_game_running = not closure_popup.routine()
@@ -435,6 +438,7 @@ def game_loop():
 
                     # Retrieve the previous room
                     was_curr_item_taken = was_prev_item_taken
+                    was_curr_combat = was_prev_combat
                     text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                                  rect_width,
                                                                                                  prev_msg_part_01,
@@ -452,9 +456,11 @@ def game_loop():
                 prev_msg_part_02 = msg_02                  # Store this room's description part 2 in case we return
                 prev_room_item = curr_room_item            # Store this room's item in case we return to this room
                 was_prev_item_taken = was_curr_item_taken  # Store whether this room's item was taken by the player
+                was_prev_combat = was_curr_combat          # Store whether this room's combat was initiated
 
                 # Generate the new room
                 was_curr_item_taken = False
+                was_curr_combat = False
                 text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                              rect_width)
                 room_socket.send_string("ITEM")
@@ -471,10 +477,12 @@ def game_loop():
             next_button.draw(pygame.mouse.get_pos())
             close_button.draw(pygame.mouse.get_pos())
             inventory_button.draw(pygame.mouse.get_pos())
-            combat_button.draw(pygame.mouse.get_pos())
 
             item_button.draw(pygame.mouse.get_pos())
             item_button.set_is_active(was_curr_item_taken)
+
+            combat_button.draw(pygame.mouse.get_pos())
+            combat_button.set_is_active(was_curr_combat)
 
         pygame.display.flip()
 
