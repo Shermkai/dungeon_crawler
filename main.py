@@ -6,11 +6,25 @@ import subprocess
 class Button:
     def __init__(self, position, size, button_color, text_size, text_color, text, bottom_anchor=False,
                  button_border_color=(255, 255, 255)):
+        coordinates = position
+        if position == 'TOPLEFT':
+            coordinates = (width / 5, height - height / 5)
+        elif position == 'BOTTOMLEFT':
+            coordinates = (width / 5, height - height / 20)
+        elif position == 'TOPCENTER':
+            coordinates = (width / 2, height - height / 5)
+        elif position == 'BOTTOMCENTER':
+            coordinates = (width / 2, height - height / 20)
+        elif position == 'TOPRIGHT':
+            coordinates = (width * 0.8, height - height / 5)
+        elif position == 'BOTTOMRIGHT':
+            coordinates = (width * 0.8, height - height / 20)
+
         # Set up the button rectangle
-        self._button_rect = pygame.Rect(position, size)
-        self._button_rect.center = position
+        self._button_rect = pygame.Rect(coordinates, size)
+        self._button_rect.center = coordinates
         if bottom_anchor:
-            self._button_rect.midbottom = position
+            self._button_rect.midbottom = coordinates
 
         # Set up button text
         self._font = pygame.font.SysFont('arial', text_size)
@@ -160,7 +174,7 @@ def win_screen():
 
     screen.fill('black')  # Clear the game loop
 
-    exit_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
+    exit_button = Button('BOTTOMCENTER', (width / 3.5, height / 7),
                          (255, 115, 115), int(height * .095), 'black', "Exit Game",
                          True, (205, 50, 50))
 
@@ -191,7 +205,7 @@ def inventory():
 
     screen.fill('black')  # Clear the game loop
 
-    exit_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
+    exit_button = Button('BOTTOMCENTER', (width / 3.5, height / 7),
                          (255, 115, 115), int(height * .095), 'black', "Exit Inventory",
                          True, (205, 50, 50))
 
@@ -300,19 +314,19 @@ def game_loop():
     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
 
     # Create buttons
-    back_button = Button((width / 5, height - height / 20), (width / 3.5, height / 7),
+    back_button = Button('BOTTOMLEFT', (width / 3.5, height / 7),
                          (160, 160, 160), int(height * .1), 'black', "Menu", True)
-    next_button = Button((width * 0.8, height - height / 20), (width / 3.5, height / 7),
+    next_button = Button('BOTTOMRIGHT', (width / 3.5, height / 7),
                          (160, 160, 160), int(height * .1), 'black', "New Room", True)
-    close_button = Button((width / 2, height - height / 20), (width / 3.5, height / 7),
+    close_button = Button('BOTTOMCENTER', (width / 3.5, height / 7),
                           (255, 115, 115), int(height * .1), 'black', "Exit Dungeon",
                           True, (205, 50, 50))
-    inventory_button = Button((width / 2, height - height / 5), (width / 3.5, height / 7),
-                              (160, 160, 160), int(height * .1), 'black', "Inventory", True)
-    item_button = Button((width / 5, height - height / 5), (width / 3.5, height / 7),
+    item_button = Button('TOPLEFT', (width / 3.5, height / 7),
                          (160, 160, 160), int(height * .1), 'black', "Grab Item", True)
-    combat_button = Button((width * 0.8, height - height / 5), (width / 3.5, height / 7),
+    combat_button = Button('TOPRIGHT', (width / 3.5, height / 7),
                            (160, 160, 160), int(height * .1), 'black', "Fight!", True)
+    inventory_button = Button('TOPCENTER', (width / 3.5, height / 7),
+                              (160, 160, 160), int(height * .1), 'black', "Inventory", True)
 
     # Get the item for the current room
     room_socket.send_string("ITEM")
@@ -449,12 +463,12 @@ def main_menu():
     screen.blit(subtitle_text, subtitle_rect)  # Text displayed outside loop because it doesn't change
 
     # Create buttons
-    start_button = Button((width / 2, height - height / 3), (width / 3.5, height / 7),
+    start_button = Button('TOPCENTER', (width / 3.5, height / 7),
                           (125, 255, 115), int(height * .1), 'black', "Start Game",
-                          button_border_color=(45, 175, 35))
-    close_button = Button((width / 2, height - height / 6), (width / 3.5, height / 7),
+                          True, (45, 175, 35))
+    close_button = Button('BOTTOMCENTER', (width / 3.5, height / 7),
                           (255, 115, 115), int(height * .1), 'black', "Close Game",
-                          button_border_color=(205, 50, 50))
+                          True, (205, 50, 50))
 
     is_menu_running = True
 
