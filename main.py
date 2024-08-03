@@ -200,6 +200,39 @@ def win_screen():
     return False
 
 
+def combat():
+    """Displays combat and handles microservice calls"""
+
+    screen.fill('black')  # Clear the game loop
+
+    # Create text display area
+    rect_width = width * .95
+    rect_height = height * .57
+    rect_pos = (width / 2, height / 3)
+    rect = pygame.Rect(rect_pos, (rect_width, rect_height))
+    rect.center = rect_pos
+    pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
+
+    exit_button = Button('BOTTOMCENTER', (width / 3.5, height / 7),
+                         (255, 115, 115), int(height * .095), 'black', "Run Away!!!",
+                         True, (205, 50, 50))
+
+    is_combat_showing = True
+
+    while is_combat_showing:
+
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if exit_button.check_press(event.pos):
+                    screen.fill('black')
+                    is_combat_showing = False
+
+        if is_combat_showing:
+            exit_button.draw(pygame.mouse.get_pos())
+
+        pygame.display.flip()
+
+
 def inventory():
     """Displays and manipulates the player's inventory"""
 
@@ -369,7 +402,8 @@ def game_loop():
                         is_game_running = win_screen()
                         return_state = 'CLOSE'
                 elif combat_button.check_press(event.pos):
-                    print("Fight!")
+                    combat()
+                    draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
                 elif close_button.check_press(event.pos):
                     is_game_running = not closure_popup.routine()
 
