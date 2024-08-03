@@ -3,7 +3,7 @@ import random
 
 
 def generate_room(is_first_half):
-    """Generates a description for the current room by pulling keywords from lists."""
+    """Generates a description for the current room by pulling keywords from lists"""
 
     adjectives = ['dark', 'smelly', 'mossy', 'overgrown', 'cold', 'humid', 'decrepit', 'crumbling', 'volcanic',
                   'frozen', 'cluttered', 'hot', 'pleasant', 'horrifying', 'dirty', 'pristine', 'carpeted', 'quaint',
@@ -23,12 +23,9 @@ def generate_room(is_first_half):
     monsters = ['slime', 'skeleton']
     door_position = ['north', 'east', 'south', 'west']
 
-    # Generate a random monster 25% of the time
-    monster = ""
-    if random.random() > 0.75:
-        monster = " and a " + random.choice(monsters)
-
     item = ""
+    monster_block = ""
+    monster = 'NONE'
     first_template_val = random.random()
     second_template_val = random.random()
     if is_first_half:
@@ -50,22 +47,28 @@ def generate_room(is_first_half):
                            "whatever you feel in the moment. " + "To make present matters even more abnormal, " +
                            "a swarm of " + random.choice(clutter) + " floods the tabletops and ground.")
     else:
+        # Generate a random monster 25% of the time
+        if random.random() > 0.75:
+            monster = random.choice(monsters)
+            monster_block = " and a " + monster
+
         item = random.choice(items)
+
         if second_template_val < 0.33:
-            description = ("Inside, you are greeted by a(n) " + item + monster +
+            description = ("Inside, you are greeted by a(n) " + item + monster_block +
                            ". There is a door to the " + random.choice(door_position) + " made of " +
                            random.choice(materials) + ". What do you do...?")
         elif 0.33 <= second_template_val < 0.66:
-            description = ("Deeper within, your eye catches a glimpse of a(n) " + item + monster +
+            description = ("Deeper within, your eye catches a glimpse of a(n) " + item + monster_block +
                            ". You also spot the glint of a doorknob to the " + random.choice(door_position) +
                            " attached to a slab of " + random.choice(materials) + ". What do you do...?")
         else:
-            description = ("Amongst a sea of futility, you do manage to find a(n) " + item + monster +
+            description = ("Amongst a sea of futility, you do manage to find a(n) " + item + monster_block +
                            ". Your only way out of this place other than backtracking is through the " +
                            random.choice(materials) + " door that barricades the room from the " +
                            random.choice(door_position) + ". What do you do...?")
 
-    return description, item
+    return description, item, monster
 
 
 print("[RG] Initialized room_generator.py")
@@ -87,16 +90,19 @@ while True:
             break
 
         if message.decode() == 'RM1':     # Room message part 1
-            description_reply, item_reply = generate_room(True)
+            description_reply, item_reply, monster_reply = generate_room(True)
             print("[RG] Sent to client:", description_reply)
             socket.send_string(description_reply)
         elif message.decode() == 'RM2':   # Room message part 2
-            description_reply, item_reply = generate_room(False)
+            description_reply, item_reply, monster_reply = generate_room(False)
             print("[RG] Sent to client:", description_reply)
             socket.send_string(description_reply)
         elif message.decode() == 'ITEM':  # Room item
             print("[RG] Sent to client:", item_reply)
             socket.send_string(item_reply)
+        elif message.decode() == 'MONSTER':
+            print("[RG] Sent to client:", monster_reply)
+            socket.send_string(monster_reply)
 
 print("[RG] Closed room_generator.py")
 context.destroy()

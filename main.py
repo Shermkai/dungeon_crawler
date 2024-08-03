@@ -200,7 +200,7 @@ def win_screen():
     return False
 
 
-def combat():
+def combat(monster):
     """Displays combat and handles microservice calls"""
 
     screen.fill('black')  # Clear the game loop
@@ -218,6 +218,7 @@ def combat():
                          True, (205, 50, 50))
 
     is_combat_showing = True
+    print(monster)
 
     while is_combat_showing:
 
@@ -361,12 +362,15 @@ def game_loop():
     inventory_button = Button('TOPCENTER', (width / 3.5, height / 7),
                               (160, 160, 160), int(height * .1), 'black', "Inventory", True)
 
-    # Get the item for the current room
-    room_socket.send_string("ITEM")
+    # Get the item and monster for the current room
+    room_socket.send_string('ITEM')
     curr_room_item = room_socket.recv().decode()
+    room_socket.send_string('MONSTER')
+    curr_room_monster = room_socket.recv().decode()
 
     return_state = ''            # The state in which the game loop was exited. Either 'BACK' or 'CLOSE'
-    prev_room_item = ""          # Used to store a room's item for use in going back
+    prev_room_item = ''          # Used to store a room's item for use in going back
+    prev_room_monster = ''       # Used to store a room's monster for use in going back
     prev_msg_part_01 = ""        # Used to store the first half of the description for use in going back
     prev_msg_part_02 = ""        # Used to store the second half of the description for use in going back
     was_curr_item_taken = False  # Whether the current room's item was taken
@@ -404,7 +408,7 @@ def game_loop():
                         is_game_running = win_screen()
                         return_state = 'CLOSE'
                 elif combat_button.check_press(event.pos):
-                    combat()
+                    combat(curr_room_monster)
                     was_curr_combat = True
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
                 elif close_button.check_press(event.pos):
@@ -444,6 +448,7 @@ def game_loop():
                                                                                                  prev_msg_part_01,
                                                                                                  prev_msg_part_02)
                     curr_room_item = prev_room_item
+                    curr_room_monster = prev_room_monster
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
 
             # Next button or right arrow generates a new room. These rooms are not saved like previous rooms,
@@ -452,9 +457,11 @@ def game_loop():
                 is_first_room = False
                 back_button.set_text("Back")
                 screen.fill('black')                       # Clear the screen so the previous page appears properly
+
                 prev_msg_part_01 = msg_01                  # Store this room's description part 1 in case we return
                 prev_msg_part_02 = msg_02                  # Store this room's description part 2 in case we return
                 prev_room_item = curr_room_item            # Store this room's item in case we return to this room
+                prev_room_monster = curr_room_monster      # Store this room's monster in case we return to this room
                 was_prev_item_taken = was_curr_item_taken  # Store whether this room's item was taken by the player
                 was_prev_combat = was_curr_combat          # Store whether this room's combat was initiated
 
@@ -463,8 +470,10 @@ def game_loop():
                 was_curr_combat = False
                 text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                              rect_width)
-                room_socket.send_string("ITEM")
+                room_socket.send_string('ITEM')
                 curr_room_item = room_socket.recv().decode()
+                room_socket.send_string('MONSTER')
+                curr_room_monster = room_socket.recv().decode()
                 draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
 
             elif event.type == pygame.QUIT:
