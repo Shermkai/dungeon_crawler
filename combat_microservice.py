@@ -19,5 +19,5 @@ while True:
         else:
             socket.send_string("Hello World!")
 
-print("[CM] Closed win_checker.py")
+print("[CM] Closed combat_microservice.py")
 context.destroy()
