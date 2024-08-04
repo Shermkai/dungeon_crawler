@@ -1,4 +1,5 @@
 import zmq
+import random
 
 print("[CM] Initialized combat_microservice.py")
 
@@ -16,8 +17,17 @@ while True:
         if message == 'Q':
             break
 
+        elif message == 'ATTACK':
+            rand_val = random.random()
+            if rand_val < 0.5:
+                print("[CM] Sent to client: HIT")
+                socket.send_string('HIT')
+            else:
+                print("[CM] Sent to client: MISS")
+                socket.send_string('MISS')
         else:
-            socket.send_string("Hello World!")
+            print("[CM] Sent to client: NONE")
+            socket.send_string('NONE')
 
 print("[CM] Closed combat_microservice.py")
 context.destroy()

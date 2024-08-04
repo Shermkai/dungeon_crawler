@@ -217,6 +217,9 @@ def combat(monster):
     rect.center = rect_pos
     pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
 
+    attack_button = Button('TOPCENTER', (width / 3.5, height / 7),
+                         (125, 255, 115), int(height * .095), 'black', "Attack!!!",
+                         True, (45, 175, 35))
     exit_button = Button('BOTTOMCENTER', (width / 3.5, height / 7),
                          (255, 115, 115), int(height * .095), 'black', "Run Away!!!",
                          True, (205, 50, 50))
@@ -234,6 +237,7 @@ def combat(monster):
                     is_combat_showing = False
 
         if is_combat_showing:
+            attack_button.draw(pygame.mouse.get_pos())
             exit_button.draw(pygame.mouse.get_pos())
 
         pygame.display.flip()
