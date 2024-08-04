@@ -140,6 +140,7 @@ class Popup:
 subprocess.Popen(["python", "room_generator.py"])
 subprocess.Popen(["python", "win_checker.py"])
 subprocess.Popen(["python", "inventory_microservice.py"])
+subprocess.Popen(["python", "combat_microservice.py"])
 
 # Global constants
 pygame.init()
@@ -154,9 +155,11 @@ context = zmq.Context()                            # Set up environment to creat
 room_socket = context.socket(zmq.REQ)              # Create request socket A
 win_socket = context.socket(zmq.REQ)               # Create request socket B
 inventory_socket = context.socket(zmq.REQ)         # Create request socket C
+combat_socket = context.socket(zmq.REQ)            # Create request socket D
 room_socket.connect("tcp://localhost:5555")        # Initialize microservice A
 win_socket.connect("tcp://localhost:5556")         # Initialize microservice B
 inventory_socket.connect("tcp://localhost:5557")   # Initialize microservice C
+combat_socket.connect("tcp://localhost:5558")      # Initialize microservice D
 
 
 def kill_microservices():
@@ -166,6 +169,7 @@ def kill_microservices():
     room_socket.send_string('Q')
     win_socket.send_string('Q')
     inventory_socket.send_string('Q')
+    combat_socket.send_string('Q')
 
 
 def win_screen():
@@ -218,7 +222,8 @@ def combat(monster):
                          True, (205, 50, 50))
 
     is_combat_showing = True
-    print(monster)
+    combat_socket.send_string('test')
+    print(combat_socket.recv().decode())
 
     while is_combat_showing:
 

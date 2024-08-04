@@ -11,7 +11,7 @@ socket.bind("tcp://*:5557")
 
 while True:
     request = socket.recv().decode()  # Get request from localhost
-    print("[IM] Received from client:", request)
+    print(f"[IM] Received from client: {request}")
 
     if len(request) > 4:
         req_type = request[0:3]  # Separate out first three characters to check if add or get
