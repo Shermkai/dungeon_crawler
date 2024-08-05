@@ -382,16 +382,21 @@ def game_loop():
     room_socket.send_string('MONSTER')
     curr_room_monster = room_socket.recv().decode()
 
-    return_state = ''            # The state in which the game loop was exited. Either 'BACK' or 'CLOSE'
-    prev_room_item = ''          # Used to store a room's item for use in going back
-    prev_room_monster = ''       # Used to store a room's monster for use in going back
-    prev_msg_part_01 = ""        # Used to store the first half of the description for use in going back
-    prev_msg_part_02 = ""        # Used to store the second half of the description for use in going back
-    was_curr_item_taken = False  # Whether the current room's item was taken
-    was_prev_item_taken = False  # Whether the previous room's item was taken
-    was_curr_combat = False      # Whether the player initiated combat in the current room
-    was_prev_combat = False      # Whether the player initiated combat in the previous room
-    is_first_room = True         # Whether the current room is the first room
+    # Combat button active/inactive setup
+    curr_combat_button_disabled = False   # Whether the combat button in the current room is disabled
+    prev_combat_button_disabled = False  # Whether the combat button in the previous room is disabled
+    if curr_room_monster == 'NONE':     # If there isn't a monster in the first room, disable the combat button
+        curr_combat_button_disabled = True
+        combat_button.set_is_active(curr_combat_button_disabled)
+
+    return_state = ''                   # The state in which the game loop was exited. Either 'BACK' or 'CLOSE'
+    prev_room_item = ''                 # Used to store a room's item for use in going back
+    prev_room_monster = ''              # Used to store a room's monster for use in going back
+    prev_msg_part_01 = ""               # Used to store the first half of the description for use in going back
+    prev_msg_part_02 = ""               # Used to store the second half of the description for use in going back
+    was_curr_item_taken = False         # Whether the current room's item was taken
+    was_prev_item_taken = False         # Whether the previous room's item was taken
+    is_first_room = True                # Whether the current room is the first room
     is_game_running = True
 
     while is_game_running:
@@ -423,7 +428,7 @@ def game_loop():
                         return_state = 'CLOSE'
                 elif combat_button.check_press(event.pos):
                     combat(curr_room_monster)
-                    was_curr_combat = True
+                    curr_combat_button_disabled = True
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
                 elif close_button.check_press(event.pos):
                     is_game_running = not closure_popup.routine()
@@ -440,9 +445,6 @@ def game_loop():
                     is_back = True
                 elif event.key == pygame.K_RIGHT:
                     is_next = True
-                elif event.key == pygame.K_w:
-                    is_game_running = win_screen()
-                    return_state = 'CLOSE'
 
             # Back button or left arrow goes back one room. A further press returns to the main menu
             if is_back:
@@ -456,7 +458,7 @@ def game_loop():
 
                     # Retrieve the previous room
                     was_curr_item_taken = was_prev_item_taken
-                    was_curr_combat = was_prev_combat
+                    curr_combat_button_disabled = prev_combat_button_disabled
                     text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                                  rect_width,
                                                                                                  prev_msg_part_01,
@@ -477,17 +479,17 @@ def game_loop():
                 prev_room_item = curr_room_item            # Store this room's item in case we return to this room
                 prev_room_monster = curr_room_monster      # Store this room's monster in case we return to this room
                 was_prev_item_taken = was_curr_item_taken  # Store whether this room's item was taken by the player
-                was_prev_combat = was_curr_combat          # Store whether this room's combat was initiated
+                prev_combat_button_disabled = curr_combat_button_disabled
 
                 # Generate the new room
                 was_curr_item_taken = False
-                was_curr_combat = False
                 text_01, text_02, text_rect_01, text_rect_02, msg_01, msg_02 = generate_text(font_large, rect,
                                                                                              rect_width)
                 room_socket.send_string('ITEM')
                 curr_room_item = room_socket.recv().decode()
                 room_socket.send_string('MONSTER')
                 curr_room_monster = room_socket.recv().decode()
+                curr_combat_button_disabled = True if curr_room_monster == 'NONE' else False
                 draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
 
             elif event.type == pygame.QUIT:
@@ -501,11 +503,11 @@ def game_loop():
             close_button.draw(pygame.mouse.get_pos())
             inventory_button.draw(pygame.mouse.get_pos())
 
-            item_button.draw(pygame.mouse.get_pos())
             item_button.set_is_active(was_curr_item_taken)
+            item_button.draw(pygame.mouse.get_pos())
 
+            combat_button.set_is_active(curr_combat_button_disabled)
             combat_button.draw(pygame.mouse.get_pos())
-            combat_button.set_is_active(was_curr_combat)
 
         pygame.display.flip()
 
