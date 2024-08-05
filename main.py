@@ -602,6 +602,11 @@ def game_loop():
                 curr_combat_button_disabled = True if curr_room_monster == 'NONE' else False
                 draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
 
+                # Hide grab item button if the item is already in the inventory
+                inventory_socket.send_string("get:all")
+                if curr_room_item in inventory_socket.recv().decode():
+                    was_curr_item_taken = True
+
             elif event.type == pygame.QUIT:
                 is_game_running = False
 
