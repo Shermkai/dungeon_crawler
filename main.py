@@ -648,9 +648,12 @@ def main_menu():
 
     # Create subtitle text
     subtitle_font = pygame.font.SysFont('arial', int(height * .045))
-    subtitle_text = subtitle_font.render("Explore a text-based dungeon and fight enemies!", True, 'white')
-    subtitle_rect = subtitle_text.get_rect(center=(width / 2, height / 2))
-    screen.blit(subtitle_text, subtitle_rect)  # Text displayed outside loop because it doesn't change
+    subtitle_text_01 = subtitle_font.render("Explore a text-based dungeon and fight enemies!", True, 'white')
+    subtitle_rect_01 = subtitle_text_01.get_rect(center=(width / 2, height / 2))
+    subtitle_text_02 = subtitle_font.render("Collect all five unique items to win.", True, 'white')
+    subtitle_rect_02 = subtitle_text_02.get_rect(center=(width / 2, height * 0.55))
+    screen.blit(subtitle_text_01, subtitle_rect_01)  # Text displayed outside loop because it doesn't change
+    screen.blit(subtitle_text_02, subtitle_rect_02)  # Text displayed outside loop because it doesn't change
 
     # Create buttons
     start_button = Button('TOPCENTER', (width / 3.5, height / 7),
@@ -679,7 +682,8 @@ def main_menu():
                 # Re-display title and subtitle if the game wasn't closed
                 if is_menu_running:
                     screen.blit(title_text, title_rect)
-                    screen.blit(subtitle_text, subtitle_rect)
+                    screen.blit(subtitle_text_01, subtitle_rect_01)
+                    screen.blit(subtitle_text_02, subtitle_rect_02)
 
             elif event.type == pygame.QUIT:
                 is_menu_running = False
