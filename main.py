@@ -3,6 +3,17 @@ import zmq
 import subprocess
 
 
+class Player:
+    def __init__(self):
+        self._health = 100
+
+    def damage(self, damage):
+        """Reduces the player's health by the given damage.
+        Returns True if this results in death (0 health) and False otherwise"""
+        self._health -= damage
+        return self._health <= 0
+
+
 class Button:
     def __init__(self, position, size, button_color, text_size, text_color, text, bottom_anchor=False,
                  button_border_color=(255, 255, 255)):
@@ -147,6 +158,7 @@ pygame.init()
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 height = screen.get_height()
 width = screen.get_width()
+player = Player()
 closure_popup = Popup()
 click_sound = pygame.mixer.Sound("click.wav")
 
@@ -204,8 +216,38 @@ def win_screen():
     return False
 
 
+def game_over_screen():
+    """Displays the screen that appears when the game is lost"""
+
+    screen.fill('black')  # Clear the game loop
+
+    exit_button = Button('BOTTOMCENTER', (width / 3.5, height / 7),
+                         (255, 115, 115), int(height * .095), 'black', "Exit Game",
+                         True, (205, 50, 50))
+
+    # Set up and draw text
+    font = pygame.font.SysFont('arial', int(height * 0.25))
+    text = font.render("You Lose...", True, 'white')
+    screen.blit(text, text.get_rect(center=(width / 2, height / 2)))
+
+    is_screen_showing = True
+
+    while is_screen_showing:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if exit_button.check_press(event.pos):
+                    screen.fill('black')
+                    is_screen_showing = False
+
+        if is_screen_showing:
+            exit_button.draw(pygame.mouse.get_pos())
+
+        pygame.display.flip()
+
+
 def combat(monster):
-    """Displays combat and handles microservice calls"""
+    """Displays combat and handles microservice calls.
+    Returns True if the player won the combat and False otherwise"""
 
     screen.fill('black')  # Clear the game loop
 
@@ -235,7 +277,9 @@ def combat(monster):
                          (255, 115, 115), int(height * .095), 'black', "Run Away!!!",
                          True, (205, 50, 50))
 
+    is_player_turn = True
     was_monster_hit = False
+    did_player_live = False
     is_combat_showing = True
 
     while is_combat_showing:
@@ -243,16 +287,31 @@ def combat(monster):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if exit_button.check_press(event.pos):
                     screen.fill('black')
+                    did_player_live = True
                     is_combat_showing = False
                 elif attack_button.check_press(event.pos):
                     combat_socket.send_string('ATTACK')
                     if combat_socket.recv().decode() == 'HIT':
                         was_monster_hit = True
+                    is_player_turn = False
+
+        if not is_player_turn:  # Take the monster's turn
+            combat_socket.send_string('ATTACK')
+            if combat_socket.recv().decode() == 'HIT':
+                if player.damage(33.3):  # If the player dies, indicate such
+                    game_over_screen()
+                    did_player_live = False
+                    is_combat_showing = False
+            is_player_turn = True
 
         if was_monster_hit:  # Update health and redraw the screen if the monster was hit
             screen.fill('black')
-            monster_health -= 33.3
             was_monster_hit = False
+            monster_health -= 33.3
+
+            if monster_health <= 1:
+                did_player_live = True
+                is_combat_showing = False
 
             monster_health_text = font.render(str(int(monster_health)) + "%", True, 'white')
             screen.blit(monster_health_text, monster_health_text.get_rect(center=(width / 2, height * 0.575)))
@@ -264,6 +323,9 @@ def combat(monster):
             exit_button.draw(pygame.mouse.get_pos())
 
         pygame.display.flip()
+
+    screen.fill('black')
+    return did_player_live
 
 
 def inventory():
@@ -445,7 +507,9 @@ def game_loop():
                         is_game_running = win_screen()
                         return_state = 'CLOSE'
                 elif combat_button.check_press(event.pos):
-                    combat(curr_room_monster)
+                    if not combat(curr_room_monster):
+                        is_game_running = False
+                        return_state = 'CLOSE'
                     curr_combat_button_disabled = True
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
                 elif close_button.check_press(event.pos):
