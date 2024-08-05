@@ -165,9 +165,13 @@ height = screen.get_height()
 width = screen.get_width()
 player = Player()
 closure_popup = Popup()
+
+# Load sound effects
 click_sound = pygame.mixer.Sound("click.wav")
 oof_sound = pygame.mixer.Sound("oof.mp3")
 slash_sound = pygame.mixer.Sound("slash.mp3")
+slime_sound = pygame.mixer.Sound("slime.mp3")
+rattle_sound = pygame.mixer.Sound("rattle.mp3")
 
 # Set up ZeroMQ to communicate between files
 context = zmq.Context()  # Set up environment to create sockets
@@ -287,6 +291,11 @@ def combat(monster):
     exit_button = Button('BOTTOMCENTER', (width / 3.5, height / 7),
                          (255, 115, 115), int(height * .095), 'black', "Run Away!!!",
                          True, (205, 50, 50))
+
+    if monster == 'slime':
+        pygame.mixer.Sound.play(slime_sound)
+    else:
+        pygame.mixer.Sound.play(rattle_sound)
 
     is_player_turn = True
     re_display_screen = False
