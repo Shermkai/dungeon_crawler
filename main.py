@@ -535,6 +535,7 @@ def game_loop():
                 elif inventory_button.check_press(event.pos):
                     inventory()
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
+
                 elif item_button.check_press(event.pos):
                     # Add the item to the inventory
                     inventory_socket.send_string(f"add:{curr_room_item}")
@@ -551,12 +552,21 @@ def game_loop():
                     if win_socket.recv().decode() == "WIN":
                         is_game_running = win_screen()
                         return_state = 'CLOSE'
+
                 elif combat_button.check_press(event.pos):
                     if not combat(curr_room_monster):
                         is_game_running = False
                         return_state = 'CLOSE'
                     curr_combat_button_disabled = True
                     draw_game_loop(text_01, text_02, ctrls_text, text_rect_01, text_rect_02, ctrls_text_rect, rect)
+
+                    # Check if the player has 5 items, meaning the game is won
+                    inventory_socket.send_string("get:all")
+                    win_socket.send_string(inventory_socket.recv().decode())
+                    if win_socket.recv().decode() == "WIN":
+                        is_game_running = win_screen()
+                        return_state = 'CLOSE'
+
                 elif close_button.check_press(event.pos):
                     is_game_running = not closure_popup.routine()
 
