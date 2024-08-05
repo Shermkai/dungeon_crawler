@@ -342,6 +342,14 @@ def combat(monster):
 
         pygame.display.flip()
 
+    if did_player_live:
+        if monster == 'slime':
+            inventory_socket.send_string("add:slimeball")
+            print(inventory_socket.recv().decode())
+        else:
+            inventory_socket.send_string("add:bone")
+            print(inventory_socket.recv().decode())
+
     screen.fill('black')
     return did_player_live
 
