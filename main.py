@@ -217,6 +217,11 @@ def combat(monster):
     rect.center = rect_pos
     pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
 
+    # Image setup
+    monster_sprite = pygame.image.load("slime.png").convert()
+    monster_sprite = pygame.transform.scale(monster_sprite, (width / 4, width / 4))
+    screen.blit(monster_sprite, monster_sprite.get_rect(center=rect_pos))
+
     attack_button = Button('TOPCENTER', (width / 3.5, height / 7),
                          (125, 255, 115), int(height * .095), 'black', "Attack!!!",
                          True, (45, 175, 35))
