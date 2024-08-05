@@ -167,11 +167,11 @@ player = Player()
 closure_popup = Popup()
 
 # Load sound effects
-click_sound = pygame.mixer.Sound("click.wav")
-oof_sound = pygame.mixer.Sound("oof.mp3")
-slash_sound = pygame.mixer.Sound("slash.mp3")
-slime_sound = pygame.mixer.Sound("slime.mp3")
-rattle_sound = pygame.mixer.Sound("rattle.mp3")
+click_sound = pygame.mixer.Sound("sounds/click.wav")
+oof_sound = pygame.mixer.Sound("sounds/oof.mp3")
+slash_sound = pygame.mixer.Sound("sounds/slash.mp3")
+slime_sound = pygame.mixer.Sound("sounds/slime.mp3")
+rattle_sound = pygame.mixer.Sound("sounds/rattle.mp3")
 
 # Set up ZeroMQ to communicate between files
 context = zmq.Context()  # Set up environment to create sockets
