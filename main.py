@@ -249,14 +249,15 @@ def combat(monster):
                     if combat_socket.recv().decode() == 'HIT':
                         was_monster_hit = True
 
-        if was_monster_hit:
+        if was_monster_hit:  # Update health and redraw the screen if the monster was hit
             screen.fill('black')
             monster_health -= 33.3
+            was_monster_hit = False
+
             monster_health_text = font.render(str(int(monster_health)) + "%", True, 'white')
             screen.blit(monster_health_text, monster_health_text.get_rect(center=(width / 2, height * 0.575)))
             pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
             screen.blit(monster_sprite, monster_sprite.get_rect(center=rect_pos))
-            was_monster_hit = False
 
         if is_combat_showing:
             attack_button.draw(pygame.mouse.get_pos())
