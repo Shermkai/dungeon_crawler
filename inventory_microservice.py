@@ -46,6 +46,7 @@ while True:
                     else:
                         return_string += ", "
                         return_string += item
+                print("[IM] Sent to client: " + return_string)
                 socket.send_string(return_string)  # Send back list of items
     else:
         if request == "q" or request == "Q":
