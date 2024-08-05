@@ -166,6 +166,8 @@ width = screen.get_width()
 player = Player()
 closure_popup = Popup()
 click_sound = pygame.mixer.Sound("click.wav")
+oof_sound = pygame.mixer.Sound("oof.mp3")
+slash_sound = pygame.mixer.Sound("slash.mp3")
 
 # Set up ZeroMQ to communicate between files
 context = zmq.Context()  # Set up environment to create sockets
@@ -297,6 +299,7 @@ def combat(monster):
 
             combat_socket.send_string('ATTACK')
             if combat_socket.recv().decode() == 'HIT':
+                pygame.mixer.Sound.play(oof_sound)
                 re_display_screen = True
                 if player.damage(12.5):  # If the player dies, indicate such
                     game_over_screen()
@@ -313,9 +316,10 @@ def combat(monster):
                     screen.fill('black')
                     did_player_live = True
                     is_combat_showing = False
-                elif attack_button.check_press(event.pos):
+                elif attack_button.check_press(event.pos):  # Take the player's turn
                     combat_socket.send_string('ATTACK')
                     if combat_socket.recv().decode() == 'HIT':
+                        pygame.mixer.Sound.play(slash_sound)
                         monster_health -= 33.3
                     is_player_turn = False
                     re_display_screen = True
@@ -527,6 +531,10 @@ def game_loop():
                     inventory_socket.send_string(f"add:{curr_room_item}")
                     print(inventory_socket.recv().decode())
                     was_curr_item_taken = True
+
+                    # When the player grabs an item, increase their hit chance slightly in combat
+                    combat_socket.send_string("RAISE THRESHOLD")
+                    print(combat_socket.recv().decode())
 
                     # Check if the player has 5 items, meaning the game is won
                     inventory_socket.send_string("get:all")
