@@ -151,15 +151,15 @@ closure_popup = Popup()
 click_sound = pygame.mixer.Sound("click.wav")
 
 # Set up ZeroMQ to communicate between files
-context = zmq.Context()                            # Set up environment to create sockets
-room_socket = context.socket(zmq.REQ)              # Create request socket A
-win_socket = context.socket(zmq.REQ)               # Create request socket B
-inventory_socket = context.socket(zmq.REQ)         # Create request socket C
-combat_socket = context.socket(zmq.REQ)            # Create request socket D
-room_socket.connect("tcp://localhost:5555")        # Initialize microservice A
-win_socket.connect("tcp://localhost:5556")         # Initialize microservice B
-inventory_socket.connect("tcp://localhost:5557")   # Initialize microservice C
-combat_socket.connect("tcp://localhost:5558")      # Initialize microservice D
+context = zmq.Context()  # Set up environment to create sockets
+room_socket = context.socket(zmq.REQ)  # Create request socket A
+win_socket = context.socket(zmq.REQ)  # Create request socket B
+inventory_socket = context.socket(zmq.REQ)  # Create request socket C
+combat_socket = context.socket(zmq.REQ)  # Create request socket D
+room_socket.connect("tcp://localhost:5555")  # Initialize microservice A
+win_socket.connect("tcp://localhost:5556")  # Initialize microservice B
+inventory_socket.connect("tcp://localhost:5557")  # Initialize microservice C
+combat_socket.connect("tcp://localhost:5558")  # Initialize microservice D
 
 
 def kill_microservices():
@@ -222,13 +222,20 @@ def combat(monster):
     monster_sprite = pygame.transform.scale(monster_sprite, (width / 4, width / 4))
     screen.blit(monster_sprite, monster_sprite.get_rect(center=rect_pos))
 
+    # Monster health setup
+    monster_health = 100
+    font = pygame.font.SysFont('arial', int(height * .05))
+    monster_health_text = font.render(str(monster_health) + "%", True, 'white')
+    screen.blit(monster_health_text, monster_health_text.get_rect(center=(width / 2, height * 0.575)))
+
     attack_button = Button('TOPCENTER', (width / 3.5, height / 7),
-                         (125, 255, 115), int(height * .095), 'black', "Attack!!!",
-                         True, (45, 175, 35))
+                           (125, 255, 115), int(height * .095), 'black', "Attack!!!",
+                           True, (45, 175, 35))
     exit_button = Button('BOTTOMCENTER', (width / 3.5, height / 7),
                          (255, 115, 115), int(height * .095), 'black', "Run Away!!!",
                          True, (205, 50, 50))
 
+    was_monster_hit = False
     is_combat_showing = True
 
     while is_combat_showing:
@@ -239,7 +246,17 @@ def combat(monster):
                     is_combat_showing = False
                 elif attack_button.check_press(event.pos):
                     combat_socket.send_string('ATTACK')
-                    print(combat_socket.recv().decode())
+                    if combat_socket.recv().decode() == 'HIT':
+                        was_monster_hit = True
+
+        if was_monster_hit:
+            screen.fill('black')
+            monster_health -= 33.3
+            monster_health_text = font.render(str(int(monster_health)) + "%", True, 'white')
+            screen.blit(monster_health_text, monster_health_text.get_rect(center=(width / 2, height * 0.575)))
+            pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
+            screen.blit(monster_sprite, monster_sprite.get_rect(center=rect_pos))
+            was_monster_hit = False
 
         if is_combat_showing:
             attack_button.draw(pygame.mouse.get_pos())
@@ -286,8 +303,8 @@ def inventory():
     inventory_socket.send_string("get:all")
     inventory_list = inventory_socket.recv().decode()
     inventory_list = inventory_list.replace(',', '')  # Remove commas
-    inventory_list = inventory_list.split()                        # Turn string into list
-    coord_index = 0                                                # Current index of the list of rectangle coordinates
+    inventory_list = inventory_list.split()  # Turn string into list
+    coord_index = 0  # Current index of the list of rectangle coordinates
     for item in inventory_list:
         item = item.capitalize()
         text = font.render(item, True, 'black')
@@ -383,20 +400,20 @@ def game_loop():
     curr_room_monster = room_socket.recv().decode()
 
     # Combat button active/inactive setup
-    curr_combat_button_disabled = False   # Whether the combat button in the current room is disabled
+    curr_combat_button_disabled = False  # Whether the combat button in the current room is disabled
     prev_combat_button_disabled = False  # Whether the combat button in the previous room is disabled
-    if curr_room_monster == 'NONE':     # If there isn't a monster in the first room, disable the combat button
+    if curr_room_monster == 'NONE':  # If there isn't a monster in the first room, disable the combat button
         curr_combat_button_disabled = True
         combat_button.set_is_active(curr_combat_button_disabled)
 
-    return_state = ''                   # The state in which the game loop was exited. Either 'BACK' or 'CLOSE'
-    prev_room_item = ''                 # Used to store a room's item for use in going back
-    prev_room_monster = ''              # Used to store a room's monster for use in going back
-    prev_msg_part_01 = ""               # Used to store the first half of the description for use in going back
-    prev_msg_part_02 = ""               # Used to store the second half of the description for use in going back
-    was_curr_item_taken = False         # Whether the current room's item was taken
-    was_prev_item_taken = False         # Whether the previous room's item was taken
-    is_first_room = True                # Whether the current room is the first room
+    return_state = ''  # The state in which the game loop was exited. Either 'BACK' or 'CLOSE'
+    prev_room_item = ''  # Used to store a room's item for use in going back
+    prev_room_monster = ''  # Used to store a room's monster for use in going back
+    prev_msg_part_01 = ""  # Used to store the first half of the description for use in going back
+    prev_msg_part_02 = ""  # Used to store the second half of the description for use in going back
+    was_curr_item_taken = False  # Whether the current room's item was taken
+    was_prev_item_taken = False  # Whether the previous room's item was taken
+    is_first_room = True  # Whether the current room is the first room
     is_game_running = True
 
     while is_game_running:
@@ -449,7 +466,7 @@ def game_loop():
             # Back button or left arrow goes back one room. A further press returns to the main menu
             if is_back:
                 screen.fill('black')  # Clear the screen so the previous page appears properly
-                if is_first_room:     # If this is the first room, go back to the main menu
+                if is_first_room:  # If this is the first room, go back to the main menu
                     is_game_running = False
                     return_state = 'BACK'
                 else:  # If this is not the first room, go back to the previous room
@@ -472,12 +489,12 @@ def game_loop():
             elif is_next:
                 is_first_room = False
                 back_button.set_text("Back")
-                screen.fill('black')                       # Clear the screen so the previous page appears properly
+                screen.fill('black')  # Clear the screen so the previous page appears properly
 
-                prev_msg_part_01 = msg_01                  # Store this room's description part 1 in case we return
-                prev_msg_part_02 = msg_02                  # Store this room's description part 2 in case we return
-                prev_room_item = curr_room_item            # Store this room's item in case we return to this room
-                prev_room_monster = curr_room_monster      # Store this room's monster in case we return to this room
+                prev_msg_part_01 = msg_01  # Store this room's description part 1 in case we return
+                prev_msg_part_02 = msg_02  # Store this room's description part 2 in case we return
+                prev_room_item = curr_room_item  # Store this room's item in case we return to this room
+                prev_room_monster = curr_room_monster  # Store this room's monster in case we return to this room
                 was_prev_item_taken = was_curr_item_taken  # Store whether this room's item was taken by the player
                 prev_combat_button_disabled = curr_combat_button_disabled
 
