@@ -225,16 +225,16 @@ def combat(monster):
                          True, (205, 50, 50))
 
     is_combat_showing = True
-    combat_socket.send_string('test')
-    print(combat_socket.recv().decode())
 
     while is_combat_showing:
-
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if exit_button.check_press(event.pos):
                     screen.fill('black')
                     is_combat_showing = False
+                elif attack_button.check_press(event.pos):
+                    combat_socket.send_string('ATTACK')
+                    print(combat_socket.recv().decode())
 
         if is_combat_showing:
             attack_button.draw(pygame.mouse.get_pos())
