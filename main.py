@@ -1,6 +1,7 @@
 import pygame
 import zmq
 import subprocess
+import time
 
 
 class Player:
@@ -52,7 +53,7 @@ class Button:
         self._color = button_color
         self._border_color = button_border_color
 
-        self._is_active = True
+        self._is_inactive = False
 
     def set_text(self, new_text):
         """Updates the button's text"""
@@ -61,14 +62,16 @@ class Button:
                                        wraplength=self._text_wrap_length)
         self._text_rect = self._text.get_rect(center=self._button_rect.center)
 
-    def set_is_active(self, new_state):
+    def set_is_inactive(self, new_state):
         """Updates the active/inactive state of the button"""
-        self._is_active = not new_state
+        self._is_inactive = new_state
 
     def draw(self, position):
         """Draws and displays the button"""
 
-        if self._is_active:
+        if self._is_inactive:
+            pygame.draw.rect(screen, 'black', self._button_rect)
+        else:
             # Draw the default rectangle initially
             pygame.draw.rect(screen, self._color, self._button_rect)
 
@@ -77,12 +80,10 @@ class Button:
                 pygame.draw.rect(screen, self._border_color, self._button_rect, 10, border_radius=1)
 
             screen.blit(self._text, self._text_rect)  # Display the text
-        else:
-            pygame.draw.rect(screen, 'black', self._button_rect)
 
     def check_press(self, position):
         """Returns True or False depending on whether the button is being hovered over. Used for clicks."""
-        if self._button_rect.collidepoint(position) and self._is_active:
+        if self._button_rect.collidepoint(position) and not self._is_inactive:
             pygame.mixer.Sound.play(click_sound)
             return True
         return False
@@ -275,7 +276,7 @@ def combat(monster):
     screen.blit(monster_health_text, monster_health_text.get_rect(center=(width * 0.8, height * 0.8)))
 
     # Player health setup
-    player_health_text = font.render("Player Health: " + str(player.get_health()) + "%", True, 'white')
+    player_health_text = font.render("Player Health: " + str(int(player.get_health())) + "%", True, 'white')
     screen.blit(player_health_text, player_health_text.get_rect(center=(width * 0.2, height * 0.8)))
 
     attack_button = Button('TOPCENTER', (width / 3.5, height / 7),
@@ -291,6 +292,20 @@ def combat(monster):
     is_combat_showing = True
 
     while is_combat_showing:
+        if not is_player_turn:  # Take the monster's turn
+            time.sleep(1.5)
+
+            combat_socket.send_string('ATTACK')
+            if combat_socket.recv().decode() == 'HIT':
+                re_display_screen = True
+                if player.damage(12.5):  # If the player dies, indicate such
+                    game_over_screen()
+                    did_player_live = False
+                    is_combat_showing = False
+
+            is_player_turn = True
+            attack_button.set_is_inactive(False)
+
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if exit_button.check_press(event.pos):
@@ -303,16 +318,8 @@ def combat(monster):
                         monster_health -= 33.3
                         re_display_screen = True
                     is_player_turn = False
-
-        if not is_player_turn:  # Take the monster's turn
-            combat_socket.send_string('ATTACK')
-            if combat_socket.recv().decode() == 'HIT':
-                re_display_screen = True
-                if player.damage(33.3):  # If the player dies, indicate such
-                    game_over_screen()
-                    did_player_live = False
-                    is_combat_showing = False
-            is_player_turn = True
+                    re_display_screen = True
+                    attack_button.set_is_inactive(True)
 
         if re_display_screen:
             screen.fill('black')
@@ -478,7 +485,7 @@ def game_loop():
     prev_combat_button_disabled = False  # Whether the combat button in the previous room is disabled
     if curr_room_monster == 'NONE':  # If there isn't a monster in the first room, disable the combat button
         curr_combat_button_disabled = True
-        combat_button.set_is_active(curr_combat_button_disabled)
+        combat_button.set_is_inactive(curr_combat_button_disabled)
 
     return_state = ''  # The state in which the game loop was exited. Either 'BACK' or 'CLOSE'
     prev_room_item = ''  # Used to store a room's item for use in going back
@@ -596,10 +603,10 @@ def game_loop():
             close_button.draw(pygame.mouse.get_pos())
             inventory_button.draw(pygame.mouse.get_pos())
 
-            item_button.set_is_active(was_curr_item_taken)
+            item_button.set_is_inactive(was_curr_item_taken)
             item_button.draw(pygame.mouse.get_pos())
 
-            combat_button.set_is_active(curr_combat_button_disabled)
+            combat_button.set_is_inactive(curr_combat_button_disabled)
             combat_button.draw(pygame.mouse.get_pos())
 
         pygame.display.flip()
