@@ -293,7 +293,7 @@ def combat(monster):
 
     while is_combat_showing:
         if not is_player_turn:  # Take the monster's turn
-            time.sleep(1.5)
+            time.sleep(1.5)     # Delay for dramatic effect
 
             combat_socket.send_string('ATTACK')
             if combat_socket.recv().decode() == 'HIT':
@@ -303,6 +303,7 @@ def combat(monster):
                     did_player_live = False
                     is_combat_showing = False
 
+            # If the player lives, reactivate the attack button and pass the turn to them
             is_player_turn = True
             attack_button.set_is_inactive(False)
 
@@ -316,11 +317,11 @@ def combat(monster):
                     combat_socket.send_string('ATTACK')
                     if combat_socket.recv().decode() == 'HIT':
                         monster_health -= 33.3
-                        re_display_screen = True
                     is_player_turn = False
                     re_display_screen = True
-                    attack_button.set_is_inactive(True)
+                    attack_button.set_is_inactive(True)  # Deactivate the attack button during enemy turn
 
+        # Redraw the screen to update values
         if re_display_screen:
             screen.fill('black')
             re_display_screen = False
@@ -342,6 +343,7 @@ def combat(monster):
 
         pygame.display.flip()
 
+    # If the player won the combat, add the monster's respective item to their inventory
     if did_player_live:
         if monster == 'slime':
             inventory_socket.send_string("add:slimeball")
