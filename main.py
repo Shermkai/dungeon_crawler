@@ -7,11 +7,15 @@ class Player:
     def __init__(self):
         self._health = 100
 
+    def get_health(self):
+        """Returns the player's health"""
+        return self._health
+
     def damage(self, damage):
         """Reduces the player's health by the given damage.
         Returns True if this results in death (0 health) and False otherwise"""
         self._health -= damage
-        return self._health <= 0
+        return self._health <= 1
 
 
 class Button:
@@ -249,7 +253,8 @@ def combat(monster):
     """Displays combat and handles microservice calls.
     Returns True if the player won the combat and False otherwise"""
 
-    screen.fill('black')  # Clear the game loop
+    screen.fill('black')                                          # Clear the game loop
+    font = pygame.font.SysFont('arial', int(height * .05))  # Create font
 
     # Create text display area
     rect_width = width * .95
@@ -266,9 +271,12 @@ def combat(monster):
 
     # Monster health setup
     monster_health = 100
-    font = pygame.font.SysFont('arial', int(height * .05))
-    monster_health_text = font.render(str(monster_health) + "%", True, 'white')
-    screen.blit(monster_health_text, monster_health_text.get_rect(center=(width / 2, height * 0.575)))
+    monster_health_text = font.render("Monster Health: " + str(monster_health) + "%", True, 'white')
+    screen.blit(monster_health_text, monster_health_text.get_rect(center=(width * 0.8, height * 0.8)))
+
+    # Player health setup
+    player_health_text = font.render("Player Health: " + str(player.get_health()) + "%", True, 'white')
+    screen.blit(player_health_text, player_health_text.get_rect(center=(width * 0.2, height * 0.8)))
 
     attack_button = Button('TOPCENTER', (width / 3.5, height / 7),
                            (125, 255, 115), int(height * .095), 'black', "Attack!!!",
@@ -278,7 +286,7 @@ def combat(monster):
                          True, (205, 50, 50))
 
     is_player_turn = True
-    was_monster_hit = False
+    re_display_screen = False
     did_player_live = False
     is_combat_showing = True
 
@@ -292,29 +300,32 @@ def combat(monster):
                 elif attack_button.check_press(event.pos):
                     combat_socket.send_string('ATTACK')
                     if combat_socket.recv().decode() == 'HIT':
-                        was_monster_hit = True
+                        monster_health -= 33.3
+                        re_display_screen = True
                     is_player_turn = False
 
         if not is_player_turn:  # Take the monster's turn
             combat_socket.send_string('ATTACK')
             if combat_socket.recv().decode() == 'HIT':
+                re_display_screen = True
                 if player.damage(33.3):  # If the player dies, indicate such
                     game_over_screen()
                     did_player_live = False
                     is_combat_showing = False
             is_player_turn = True
 
-        if was_monster_hit:  # Update health and redraw the screen if the monster was hit
+        if re_display_screen:
             screen.fill('black')
-            was_monster_hit = False
-            monster_health -= 33.3
+            re_display_screen = False
 
             if monster_health <= 1:
                 did_player_live = True
                 is_combat_showing = False
 
-            monster_health_text = font.render(str(int(monster_health)) + "%", True, 'white')
-            screen.blit(monster_health_text, monster_health_text.get_rect(center=(width / 2, height * 0.575)))
+            monster_health_text = font.render("Monster Health: " + str(int(monster_health)) + "%", True, 'white')
+            screen.blit(monster_health_text, monster_health_text.get_rect(center=(width * 0.8, height * 0.8)))
+            player_health_text = font.render("Player Health: " + str(int(player.get_health())) + "%", True, 'white')
+            screen.blit(player_health_text, player_health_text.get_rect(center=(width * 0.2, height * 0.8)))
             pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
             screen.blit(monster_sprite, monster_sprite.get_rect(center=rect_pos))
 
