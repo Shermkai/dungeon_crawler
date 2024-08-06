@@ -272,8 +272,13 @@ def combat(monster):
     pygame.draw.rect(screen, 'white', rect, 5, border_radius=1)
 
     # Image setup
-    monster_sprite = pygame.image.load("slime.png").convert()
-    monster_sprite = pygame.transform.scale(monster_sprite, (width / 4, width / 4))
+    if monster == 'slime':
+        monster_sprite = pygame.image.load("slime.png").convert()
+        monster_sprite = pygame.transform.scale(monster_sprite, (width / 3.5, width / 3.5))
+    else:
+        monster_sprite = pygame.image.load("skeleton.png").convert()
+        monster_sprite = pygame.transform.scale(monster_sprite, (width / 3.5, width / 3.5))
+
     screen.blit(monster_sprite, monster_sprite.get_rect(center=rect_pos))
 
     # Monster health setup
