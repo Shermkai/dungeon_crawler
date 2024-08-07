@@ -148,8 +148,8 @@ def combat(monster):
     while is_combat_showing:
         if not is_player_turn:  # Take the monster's turn
             time.sleep(1.5)  # Delay for dramatic effect
-
             combat_socket.send_string('ATTACK')
+
             if combat_socket.recv().decode() == 'HIT':
                 pygame.mixer.Sound.play(globals.oof_sound)
                 re_display_screen = True
@@ -157,6 +157,8 @@ def combat(monster):
                     game_over_screen()
                     did_player_live = False
                     is_combat_showing = False
+            else:
+                pygame.mixer.Sound.play(globals.swoosh_sound)
 
             # If the player lives, reactivate the attack button and pass the turn to them
             is_player_turn = True
@@ -170,9 +172,13 @@ def combat(monster):
                     is_combat_showing = False
                 elif attack_button.check_press(event.pos):  # Take the player's turn
                     combat_socket.send_string('ATTACK')
+
                     if combat_socket.recv().decode() == 'HIT':
                         pygame.mixer.Sound.play(globals.slash_sound)
                         monster_health -= 33.3
+                    else:
+                        pygame.mixer.Sound.play(globals.swoosh_sound)
+
                     is_player_turn = False
                     re_display_screen = True
                     attack_button.set_is_inactive(True)  # Deactivate the attack button during enemy turn
