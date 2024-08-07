@@ -50,7 +50,7 @@ def win_screen():
     # Set up and draw text
     font = pygame.font.SysFont('arial', int(globals.height * 0.25))
     text = font.render("You Win!!!", True, 'white')
-    globals.screen.blit(text, text.get_rect(center=(globals.width / 2, globals.height / 2)))
+    globals.screen.blit(text, text.get_rect(center=(globals.width / 2, globals.height / 3)))
 
     is_screen_showing = True
 
@@ -81,7 +81,7 @@ def game_over_screen():
     # Set up and draw text
     font = pygame.font.SysFont('arial', int(globals.height * 0.25))
     text = font.render("You Lose...", True, 'white')
-    globals.screen.blit(text, text.get_rect(center=(globals.width / 2, globals.height / 2)))
+    globals.screen.blit(text, text.get_rect(center=(globals.width / 2, globals.height / 3)))
 
     is_screen_showing = True
 
