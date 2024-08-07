@@ -3,6 +3,8 @@ import globals
 
 
 class Button:
+    """Handles button creation and interaction"""
+
     def __init__(self, position, size, button_color, text_size, text_color, text, bottom_anchor=False,
                  button_border_color=(255, 255, 255)):
         coordinates = position
@@ -73,6 +75,8 @@ class Button:
 
 
 class Data:
+    """Stores game loop data pertaining to the room's display, such as text and the rectangular border"""
+
     def __init__(self, new_txt_01, new_txt_02, new_ctrls_txt, new_txt_rect_01, new_txt_rect_02, new_ctrls_rect,
                  new_rect):
         self._text_01 = new_txt_01
@@ -118,6 +122,8 @@ class Data:
 
 
 class Player:
+    """Handles player health and damage"""
+
     def __init__(self):
         self._health = 100
 
@@ -133,6 +139,8 @@ class Player:
 
 
 class Popup:
+    """Handles the popup that displays when attempting to close the game"""
+
     def __init__(self):
         # Set up popup dimensions
         self._pos = (globals.width / 2, globals.height / 2)
