@@ -5,12 +5,6 @@ import time
 import classes
 import globals
 
-# Run microservices in background
-subprocess.Popen(["python", "room_generator.py"])
-subprocess.Popen(["python", "win_checker.py"])
-subprocess.Popen(["python", "inventory_microservice.py"])
-subprocess.Popen(["python", "combat_microservice.py"])
-
 # Set up ZeroMQ to communicate between files
 context = zmq.Context()  # Set up environment to create sockets
 room_socket = context.socket(zmq.REQ)  # Create request socket A
@@ -563,6 +557,12 @@ def main_menu():
 
         pygame.display.flip()
 
+
+# Run microservices in background
+subprocess.Popen(["python", "room_generator.py"])
+subprocess.Popen(["python", "win_checker.py"])
+subprocess.Popen(["python", "inventory_microservice.py"])
+subprocess.Popen(["python", "combat_microservice.py"])
 
 main_menu()
 kill_microservices()

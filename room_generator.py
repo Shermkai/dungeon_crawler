@@ -1,33 +1,35 @@
 import zmq
 import random
 
+# Lists that room generation pulls from to insert into templates
+adjectives = ['dark', 'smelly', 'mossy', 'overgrown', 'cold', 'humid', 'decrepit', 'crumbling', 'volcanic',
+              'frozen', 'cluttered', 'hot', 'pleasant', 'horrifying', 'dirty', 'pristine', 'carpeted', 'quaint',
+              'extravagant', 'dry', 'silent', 'echoey', 'mushy', 'dripping', 'beautiful', 'haunting', 'grassy',
+              'mystical', 'arcane']
+materials = ['stone', 'wood', 'ceramic', 'steel', 'slime', 'magma', 'dirt', 'meteorite', 'glass', 'clay',
+             'organic matter', 'ice', 'cheese', 'crystal']
+feelings = ['dread', 'fear', 'joy', 'sadness', 'anger', 'laughter', 'melancholy', 'rage', 'hope', 'anxiety',
+            'nostalgia', 'jumpiness', 'nothingness', 'disgust', 'intrigue', 'pride', 'inspiration',
+            'disappointment', 'misery', 'annoyance', 'jealousy']
+room_types = ['jail', 'chapel', 'bedroom', 'forge', 'bathhouse', 'stable', 'garden', 'schoolroom',
+              'storage chamber', 'fridge', 'painter\'s studio', 'workshop', 'child\'s area', 'crypt',
+              'corridor', 'kitchen', 'dining room', 'ballroom', 'morgue', 'laboratory', 'recreational area',
+              'museum']
+clutter = ['cobwebs', 'ingots', 'bones', 'trash piles', 'art supplies', 'strange animal hairs']
+items = ['idol', 'diamond', 'torch']
+monsters = ['slime', 'skeleton']
+door_position = ['north', 'east', 'south', 'west']
+
 
 def generate_room(is_first_half):
     """Generates a description for the current room by pulling keywords from lists"""
-
-    adjectives = ['dark', 'smelly', 'mossy', 'overgrown', 'cold', 'humid', 'decrepit', 'crumbling', 'volcanic',
-                  'frozen', 'cluttered', 'hot', 'pleasant', 'horrifying', 'dirty', 'pristine', 'carpeted', 'quaint',
-                  'extravagant', 'dry', 'silent', 'echoey', 'mushy', 'dripping', 'beautiful', 'haunting', 'grassy',
-                  'mystical', 'arcane']
-    materials = ['stone', 'wood', 'ceramic', 'steel', 'slime', 'magma', 'dirt', 'meteorite', 'glass', 'clay',
-                 'organic matter', 'ice', 'cheese', 'crystal']
-    feelings = ['dread', 'fear', 'joy', 'sadness', 'anger', 'laughter', 'melancholy', 'rage', 'hope', 'anxiety',
-                'nostalgia', 'jumpiness', 'nothingness', 'disgust', 'intrigue', 'pride', 'inspiration',
-                'disappointment', 'misery', 'annoyance', 'jealousy']
-    room_types = ['jail', 'chapel', 'bedroom', 'forge', 'bathhouse', 'stable', 'garden', 'schoolroom',
-                  'storage chamber', 'fridge', 'painter\'s studio', 'workshop', 'child\'s area', 'crypt',
-                  'corridor', 'kitchen', 'dining room', 'ballroom', 'morgue', 'laboratory', 'recreational area',
-                  'museum']
-    clutter = ['cobwebs', 'ingots', 'bones', 'trash piles', 'art supplies', 'strange animal hairs']
-    items = ['idol', 'diamond', 'torch']
-    monsters = ['slime', 'skeleton']
-    door_position = ['north', 'east', 'south', 'west']
 
     item = ""
     monster_block = ""
     monster = 'NONE'
     first_template_val = random.random()
     second_template_val = random.random()
+
     if is_first_half:
         if first_template_val < 0.33:
             description = ("You enter a(n) " + random.choice(adjectives) + " room, its aging walls made of " +
